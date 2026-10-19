@@ -86,8 +86,10 @@ struct TransferQueuePanel: View {
                     .accessibilityIdentifier("queue-feedback")
                     .help(feedback.message)
             } else if !prefs.queueVisible, let latest = latestSummary {
-                Text(latest.app.name + " · " + prefs.stageTitle(latest.stage))
+                Text(latest.app.name + " · " + prefs.stageTitle(latest.stage) + " · " + prefs.jobAccountLine(latest))
                     .font(.system(size: 11)).foregroundStyle(.secondary).lineLimit(1)
+                    .truncationMode(.middle)
+                    .help(latest.app.name + " · " + prefs.stageTitle(latest.stage) + "\n" + prefs.jobAccountLine(latest))
             }
             Spacer(minLength: 6)
             if model.queuePaused { Text(prefs.t("Приостановлено", "Paused")).font(.system(size: 10.5)).foregroundStyle(.secondary) }

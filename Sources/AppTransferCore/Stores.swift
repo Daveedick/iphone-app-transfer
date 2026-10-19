@@ -35,17 +35,17 @@ public actor LibraryStore {
     }
     public func iconURL(for item:LibraryItem) -> URL {root.appendingPathComponent("Icons/\(item.id.uuidString).png")}
     public func matching(_ app:AppDescriptor,accountID:String?) -> LibraryItem? {snapshot().first{!$0.missing && $0.app.sameBuild(as:app) && $0.accountID==accountID}}
-    public func add(stagedURL:URL,inspection:IPAInspection,accountID:String?,email:String?) throws -> LibraryItem {
+    public func add(stagedURL:URL,inspection:IPAInspection,accountID:String?,email:String?,origin:ArchiveOrigin = .appStore) throws -> LibraryItem {
         if let existing=items.first(where:{$0.sha256==inspection.sha256 && $0.accountID==accountID && !$0.missing}) {if stagedURL.standardizedFileURL.path.hasPrefix(root.appendingPathComponent("Staging").path+"/") {try? FileManager.default.removeItem(at:stagedURL)};return existing}
         let id=UUID(),relative="\(id.uuidString).ipa",destination=root.appendingPathComponent(relative)
         try FileManager.default.moveItem(at:stagedURL,to:destination)
-        let item=LibraryItem(id:id,app:inspection.app,accountID:accountID,accountEmail:email ?? inspection.app.ownerEmail,relativePath:relative,bytes:inspection.bytes,sha256:inspection.sha256,hasSinf:inspection.hasSinf)
+        let item=LibraryItem(id:id,app:inspection.app,accountID:accountID,accountEmail:email,relativePath:relative,bytes:inspection.bytes,sha256:inspection.sha256,hasSinf:inspection.hasSinf,origin:origin)
         if let icon=inspection.icon {try? icon.write(to:iconURL(for:item),options:.atomic)}
         items.append(item)
         do {try persist()} catch {items.removeAll{$0.id==id};try? FileManager.default.moveItem(at:destination,to:stagedURL);throw error}
         return item
     }
-    public func importIPA(_ source:URL) async throws -> LibraryItem {let staged=stagingURL();do {let inspection=try await Task.detached(priority:.utility){try FileManager.default.copyItem(at:source,to:staged);return try IPAInspector.inspect(staged)}.value;return try add(stagedURL:staged,inspection:inspection,accountID:nil,email:nil)}catch{try? FileManager.default.removeItem(at:staged);throw error}}
+    public func importIPA(_ source:URL) async throws -> LibraryItem {let staged=stagingURL();do {let inspection=try await Task.detached(priority:.utility){try FileManager.default.copyItem(at:source,to:staged);return try IPAInspector.inspect(staged)}.value;return try add(stagedURL:staged,inspection:inspection,accountID:nil,email:nil,origin:.imported)}catch{try? FileManager.default.removeItem(at:staged);throw error}}
     public func delete(ids:Set<UUID>,busy:Set<UUID>,recycle:((URL)throws->Void)?=nil) throws -> [LibraryItem] {
         guard ids.isDisjoint(with:busy) else {throw AppFailure("libraryBusy","An archive is used by the queue. Cancel its waiting tasks or wait for completion.")}
         var removed:[LibraryItem]=[]

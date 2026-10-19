@@ -3,8 +3,8 @@ set -euo pipefail
 app_transfer_root="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$app_transfer_root"
 configuration="${CONFIGURATION:-release}"
-app_version="${APP_VERSION:-0.1.4}"
-build_number="${APP_BUILD:-5}"
+app_version="${APP_VERSION:-0.1.5}"
+build_number="${APP_BUILD:-6}"
 source "$app_transfer_root/scripts/go-env.sh"
 ./scripts/bootstrap-deps.sh
 ./scripts/swiftpm.sh build -c "$configuration" --arch arm64

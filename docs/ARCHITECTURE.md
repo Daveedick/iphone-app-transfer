@@ -8,7 +8,7 @@
 iPhone App Transfer.app
 ├── SwiftUI + узкие AppKit-адаптеры
 │   ├── Workspace / Library / DeviceColumn / Queue / Activity
-│   ├── Settings / Accounts / Authentication
+│   ├── Settings / App Store Accounts / Authentication
 │   └── View models на MainActor
 ├── TransferCoordinator (actor): единственная очередь операций
 ├── DeviceService (serial DispatchQueue) → C bridge → libimobiledevice + libplist + зависимости
@@ -63,7 +63,9 @@ C-мост должен скрывать ручное управление па�
 
 Helper использует официальный Go module archive ipatool v2.7.0, commit `4484b55d366e177ae6c89758c61588712c572fad`, сохранённый в `Helpers/AppStoreBridge/upstream/ipatool`; local `replace` указывает на этот каталог. Папка `Downloads/ipatool-main` не является входом текущей сборки. Сохранённый patch меняет только runtime-cache namespace и не переписывает Apple-протокол; provenance и checksums описаны в `Helpers/AppStoreBridge/UPSTREAM.md` и `vendor/manifest.json`.
 
-При недоступности исходной версии UI может предложить только полученный от Apple актуальный candidate, с явным подтверждением; произвольного исторического version picker нет. Порядок выбора аккаунта: вошедший owner-matching account → выбранный → единственный доступный; owner metadata не доказывает entitlement, явный выбор задачи имеет приоритет.
+При недоступности исходной версии UI может предложить только полученный от Apple актуальный candidate, с явным подтверждением; произвольного исторического version picker нет. Порядок выбора аккаунта: вошедший owner-matching account → вошедший аккаунт по умолчанию → единственный доступный; owner metadata не доказывает entitlement, явный выбор задачи имеет приоритет. Общий resolver возвращает аккаунт и причину, чтобы preview выбора и создание задачи совпадали. После enqueue аккаунт задачи не меняется при переключении общего default.
+
+Пояснения 0.1.5 не меняют Apple helper или IPC-протокол. UI разделяет аккаунт скачивания, account hint исходного телефона и сведения самого IPA. Для импортированного/старого IPA без подтверждённого downloader нельзя выводить «Скачано через» только на основании email в metadata. Задача и Activity сохраняют необязательный снимок фактически использованного IPA с известными связями аккаунта. Если источник связан с A, а скачивание и IPA — с B, возможный аккаунт для iPhone — B. Конфликт downloader/IPA metadata показывается как неопределённость; установка и успешный запуск остаются разными состояниями.
 
 ### IPC
 
@@ -77,6 +79,7 @@ Helper использует официальный Go module archive ipatool v2.
 
 ### Изоляция аккаунтов
 
+- Локальная библиотека и snapshot очереди показываются до завершения чтения реестра аккаунтов. Ожидание системного Keychain не должно выглядеть как пустая библиотека; аккаунты в это время имеют явное состояние загрузки.
 - Внутренний UUID аккаунта не равен строке email. Смена display email не подменяет license owner.
 - Keychain service `com.apptransfer.AppStoreBridge.v1` принадлежит только iPhone App Transfer; не использовать существующие `~/.ipatool` и глобальную запись `account` другого процесса.
 - На каждый аккаунт отдельные credentials/cookies/storefront; нельзя делить mutable cookie jar между аккаунтами.
@@ -94,8 +97,8 @@ Helper использует официальный Go module archive ipatool v2.
 | DeviceApp | device ID, bundle ID, name, display version/build, store item ID, external version ID, installed/offloaded state, metadata origin, optional account hint |
 | AppleAccount | internal UUID, display email, storefront, auth state; секреты отдельно |
 | LibraryItem | UUID, bundle/store ID, display/build/external version, account UUID/known owner, SHA-256, relative managed path, bytes, min iOS/device family if available, validation state |
-| TransferJob | UUID, kind, immutable source/target IDs, requested version policy, account/library references, stage, measured progress, timestamps, structured error |
-| ActivityEntry | job ID, app/version, source/target snapshots, account display, result/stage/time; без raw auth |
+| TransferJob | UUID, kind, immutable source/target IDs, requested version policy, resolved download account/reason, account/library references, optional actual-IPA account snapshot, stage, measured progress, timestamps, structured error |
+| ActivityEntry | job ID, app/version, source/target snapshots, download account and actual-IPA account snapshot, result/stage/time; без raw auth |
 
 Ключ совместимости библиотеки не должен быть только bundle ID или названием файла. Для повторного использования учитывать bundle ID + exact build/version ID + account/license provenance + подходящий вариант для устройства. Не объединять всё по маркетинговой версии.
 
@@ -104,6 +107,8 @@ Helper использует официальный Go module archive ipatool v2.
 Переименование 0.1.4 меняет видимый бренд и `.app`/DMG, сохраняя Bundle ID `app.apptransfer.desktop`, Keychain service `com.apptransfer.AppStoreBridge.v1`, UserDefaults suite `com.apptransfer.AppTransfer`, библиотеку `~/Library/Application Support/AppTransfer` и runtime-кэш `~/Library/Caches/App Transfer`. Миграция этих идентификаторов не выполняется. Реестр аккаунтов и email хранится в Keychain; локальные manifest/history могут отдельно содержать owner email и идентификаторы устройств.
 
 Используются versioned Codable JSON manifests, атомарная запись через временный файл/rename и один actor-владелец. Данные приложения — в Application Support; реальные артефакты не в репозитории и не в `.app`. Для больших историй можно позже заменить storage без изменения domain API.
+
+Новые сведения об аккаунте/IPA необязательны при декодировании: старые manifest/history читаются без переписывания IPA. Отсутствие подтверждённого downloader сохраняет неизвестное происхождение; удаление авторизации не стирает исторический снимок. Установка готового архива не требует новой авторизации на Mac только ради установки.
 
 Архив сначала пишется в `.partial`, проходит проверку и только потом получает финальное имя и статус ready. На старте проверять missing files, незавершённые операции и временные файлы. Не считать переименование файла доказательством установки.
 

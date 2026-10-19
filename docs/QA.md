@@ -1,4 +1,21 @@
-# Проверка iPhone App Transfer preview 0.1.4 (5)
+# Локальная проверка iPhone App Transfer 0.1.5 (6)
+
+19.10.2026. Пользователь проверил локальную сборку и одобрил продолжение с commit/push. Публикация DMG/checksum как v0.1.5 пока не выполнена; текущий публичный бинарный выпуск остаётся v0.1.4. Одобрение интерфейса не заменяет pending live-проверки ниже.
+
+- **Core/Coordinator:** 30 portable CLT tests, 176 assertions, 0 failures; negative harness self-check pass. Новые проверки охватывают owner-first/default/unresolved selection, source A → actual download/IPA B, импорт без Mac-account, metadata/download conflict, legacy JSON и snapshot истории после удаления синтетического IPA. Это не XCTest и не live install.
+- **Native GUI:** synthetic RU/dark 1160 × 820 и EN/light 760 × 560, длинные email; AX readback account popover RU/EN, явной причины выбора, import/unknown/conflict, Activity с аккаунтом фактического IPA, обеих плотностей и свёрнутой очереди. Snapshot-host keyboard transport inconclusive; не выдаётся за полную проверку клавиатуры/VoiceOver.
+- **Обычный запуск:** финальная `.app` показывает 10 существующих IPA и сохранённую очередь; manifest, operations и preferences имеют прежние SHA-256. Сохранены 20 задач и 24 события. Новые задачи/phone install/uninstall/login/download не выполнялись; USB-телефон отсутствует.
+- **Keychain:** реальное чтение registry ожидает внутри `SecItemCopyMatching` (подтверждено коротким stack sample без данных авторизации). Startup теперь отображает библиотеку/очередь до завершения этого чтения; аккаунты имеют явное loading-состояние. Новый login, актуальность Apple-сессии и скачивание не проверены. Системные ACL/защита macOS не менялись.
+- **Упаковка:** release `.app` 0.1.5 (6), strict ad-hoc signature, 8 Mach-O / 6 dylib closure, 37 Go module notices, исходный digest, DMG CRC/checksum, read-only mount, Applications symlink и relocated helper hello — pass. Helper/C не менялись; Go race/vet и C sanitizers повторно для этой правки не запускались.
+- **Git:** действующая терминальная авторизация `Daveedick` подтверждена вне sandbox. Commit/push/tag/release для 0.1.5 не выполнялись.
+
+DMG: `dist/iPhone-App-Transfer-0.1.5-arm64.dmg`, 23661245 bytes. SHA-256 `d4a49789ca23000074dc4450b57c4f3bbb446638bba4e43f1373d1078cd92e8b`. Runtime source SHA-256 `66ee5e9b8b0cd4fce35372ae67079bc1a10ef1cd3e2ea0c38abf6b1c608c8efc`.
+
+Private ignored evidence: `.build/qa/accounts-0.1.5/core-results.log`, `build.json`, `packaging.json`, `preservation.json`, `git-access.json` и synthetic PNG. Clean Mac/Gatekeeper, live второй аккаунт/устройство/запуск и лицензия собственного кода остаются открытыми.
+
+---
+
+# Архив проверки preview 0.1.4 (5)
 
 ## 19.10.2026 — публичный доступ
 

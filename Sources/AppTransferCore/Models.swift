@@ -55,7 +55,18 @@ public struct LibraryItem: Codable, Hashable, Identifiable, Sendable {
     public var created: Date
     public var hasSinf: Bool
     public var missing: Bool
-    public init(id: UUID = UUID(), app: AppDescriptor, accountID: String?, accountEmail: String?, relativePath: String, bytes: Int64, sha256: String, created: Date = Date(), hasSinf: Bool, missing: Bool = false) { self.id=id; self.app=app; self.accountID=accountID; self.accountEmail=accountEmail; self.relativePath=relativePath; self.bytes=bytes; self.sha256=sha256; self.created=created; self.hasSinf=hasSinf; self.missing=missing }
+    public var origin: ArchiveOrigin?
+    public var archiveAccounts: ArchiveAccountContext {
+        let source = origin ?? (accountID == nil ? .unknown : .appStore)
+        // Older imports stored the metadata owner in accountEmail. A nonempty
+        // email without a download account ID is not download provenance.
+        let metadataOwner = app.ownerEmail ?? (accountID == nil ? accountEmail : nil)
+        return ArchiveAccountContext(origin: source,
+            downloadAccountID: source == .appStore ? accountID : nil,
+            downloadAccountEmail: source == .appStore && accountID != nil ? accountEmail : nil,
+            metadataOwnerEmail: metadataOwner)
+    }
+    public init(id: UUID = UUID(), app: AppDescriptor, accountID: String?, accountEmail: String?, relativePath: String, bytes: Int64, sha256: String, created: Date = Date(), hasSinf: Bool, missing: Bool = false, origin: ArchiveOrigin? = nil) { self.id=id; self.app=app; self.accountID=accountID; self.accountEmail=accountEmail; self.relativePath=relativePath; self.bytes=bytes; self.sha256=sha256; self.created=created; self.hasSinf=hasSinf; self.missing=missing; self.origin=origin }
 }
 
 public enum JobStage: String, Codable, Sendable {
@@ -87,7 +98,9 @@ public struct TransferJob: Codable, Identifiable, Sendable {
     public var queuePresentationDate: Date { lastQueuedAt ?? created }
     public var cancelRequested: Bool
     public var alternative: AppDescriptor?
-    public init(app: AppDescriptor, sourceDeviceID: String? = nil, sourceName: String, targetDeviceID: String? = nil, targetName: String, accountID: String? = nil, accountEmail: String? = nil, libraryID: UUID? = nil) { id=UUID(); self.app=app; self.sourceDeviceID=sourceDeviceID; self.sourceName=sourceName; self.targetDeviceID=targetDeviceID; self.targetName=targetName; self.accountID=accountID; self.accountEmail=accountEmail; self.libraryID=libraryID; stage = .queued; progress=nil; message=nil; errorCode=nil; created=Date(); updated=Date(); lastQueuedAt=nil; cancelRequested=false; alternative=nil }
+    public var accountSelectionReason: AccountSelectionReason?
+    public var archiveAccounts: ArchiveAccountContext?
+    public init(app: AppDescriptor, sourceDeviceID: String? = nil, sourceName: String, targetDeviceID: String? = nil, targetName: String, accountID: String? = nil, accountEmail: String? = nil, libraryID: UUID? = nil, accountSelectionReason: AccountSelectionReason? = nil, archiveAccounts: ArchiveAccountContext? = nil) { id=UUID(); self.app=app; self.sourceDeviceID=sourceDeviceID; self.sourceName=sourceName; self.targetDeviceID=targetDeviceID; self.targetName=targetName; self.accountID=accountID; self.accountEmail=accountEmail; self.libraryID=libraryID; stage = .queued; progress=nil; message=nil; errorCode=nil; created=Date(); updated=Date(); lastQueuedAt=nil; cancelRequested=false; alternative=nil; self.accountSelectionReason=accountSelectionReason; self.archiveAccounts=archiveAccounts }
 }
 
 public struct ActivityEntry: Codable, Identifiable, Sendable {
@@ -101,8 +114,10 @@ public struct ActivityEntry: Codable, Identifiable, Sendable {
     public var stage: JobStage
     public var message: String?
     public var date: Date
-    public init(job: TransferJob) { id=UUID(); jobID=job.id; appName=job.app.name; version=job.app.version; source=job.sourceName; target=job.targetName; accountEmail=job.accountEmail; stage=job.stage; message=job.message; date=Date() }
-    public init(appName: String, version: String, source: String, target: String, message: String) { id=UUID(); jobID=nil; self.appName=appName; self.version=version; self.source=source; self.target=target; accountEmail=nil; stage = .succeeded; self.message=message; date=Date() }
+    public var archiveAccounts: ArchiveAccountContext?
+    public var installedOnDevice: Bool?
+    public init(job: TransferJob) { id=UUID(); jobID=job.id; appName=job.app.name; version=job.app.version; source=job.sourceName; target=job.targetName; accountEmail=job.accountEmail; stage=job.stage; message=job.message; date=Date(); archiveAccounts=job.archiveAccounts; installedOnDevice=job.stage == .succeeded && job.targetDeviceID != nil }
+    public init(appName: String, version: String, source: String, target: String, message: String) { id=UUID(); jobID=nil; self.appName=appName; self.version=version; self.source=source; self.target=target; accountEmail=nil; stage = .succeeded; self.message=message; date=Date(); archiveAccounts=nil; installedOnDevice=false }
 }
 
 public struct DropPayload: Codable, Sendable {

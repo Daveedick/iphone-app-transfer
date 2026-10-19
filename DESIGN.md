@@ -63,7 +63,7 @@ Verification for this refinement includes light/dark themes, both densities, sin
 
 ## Main window
 
-Toolbar: traffic lights, app name, Devices / Activity navigation, Accounts, Settings. The library toggle exposes `⌘S`. Settings exposes `⌘,`.
+Toolbar: traffic lights, app name, Devices / Activity navigation, App Store Accounts, Settings. The library toggle exposes `⌘S`. Settings exposes `⌘,`.
 
 Below the toolbar: connected-device quick navigation. The count and names are derived from live discovery; each navigation control scrolls to its device column.
 
@@ -71,13 +71,15 @@ Each device header includes name, model, iOS and USB/connection state. Where nam
 
 Row: icon, app name, version, compact state. Avoid displaying bundle IDs, Apple request details or long account labels on every phone row. Put these in details/context actions where relevant.
 
-Selection action bar: app/count, current location, meaningful destinations, save-to-library, and library deletion when the selection is in the library. No permanent global source/target pickers. For many devices, destination actions may use a menu rather than overflow into tiny buttons.
+Selection action bar: app/count, current location, meaningful destinations, save-to-library, and library deletion when the selection is in the library. Show the resolved download account and a short reason: owner metadata, default account or sole available account. For mixed selections, show that different accounts will be used and retain each account on its task. No permanent global source/target pickers. For many devices, destination actions may use a menu rather than overflow into tiny buttons.
 
 ## Library and deletion affordance
 
 Header: Library + help; count/size; independent search. Multiple stored variants must be distinguishable by version/build and account in details. Do not present a license from one account as interchangeable with another.
 
-Tooltip: “Здесь хранятся скачанные приложения для установки на другие устройства. Может потребоваться Apple Account, под которым они скачаны.” Provide an English equivalent.
+Tooltip: “Здесь хранятся IPA для установки на устройства. На iPhone может потребоваться аккаунт, которым получен IPA. Данные и сессии приложений не переносятся.” Provide an English equivalent.
+
+Details distinguish “Downloaded through: email” from “Imported IPA” and “Account from IPA metadata: email”. Unknown accounts and conflicts remain explicit. Import metadata is a hint, not proof of the downloader or license. The possible iPhone account comes from the archive actually used, rather than the source phone's old account hint.
 
 Add **Delete from Library…** to context menu and selection action bar, with trash icon plus understandable label. `⌘⌫` may invoke this only with library selection/focus and only via the confirmation flow. Explain that installed apps stay on phones. Busy archives cannot be removed silently.
 
@@ -89,6 +91,8 @@ Queue header always offers collapse/expand and an honest pause/resume control. P
 
 Show source → destination, version when relevant, readable current stage, progress only where measured, and an appropriate cancel control. Percentages for downloading and installing are separate; do not invent one precise combined percentage or ETA.
 
+Show the per-task download account as persistent secondary text before and during download. For an installation from the library, identify that source and its known archive account. The collapsed queue also identifies the account for the active download. After verified installation, prompt the user to open the app on the iPhone and state which Apple Account may be needed, or that it is unknown. This is not a claim of successful launch. Preserve these archive/account details in Activity after authorization or archive removal.
+
 Finished items may be visually quieter. Every queued item remains accessible even if there are hundreds; use a scrolling or virtualized queue rather than the HTML's demonstration slice.
 
 Activity shows full account emails as approved, but no auth secrets. Errors explain recovery: reconnect/unlock device, choose account, sign in again, select another version, free space, retry a failed network request.
@@ -96,7 +100,7 @@ Activity shows full account emails as approved, but no auth secrets. Errors expl
 ## Popovers, keyboard and animation
 
 - Settings: language, density, theme; immediate application and persisted preferences.
-- Accounts: saved identities, authorization state, add/remove identity, reauthenticate. Passwords only in secure input, 2FA field separate.
+- App Store Accounts: saved identities, authorization state, add/remove identity, reauthenticate, and a “Default” marker. Explain that accounts download from Apple, availability depends on account region, rights and version, and additional accounts cover different purchase histories. The default applies only when there is no authenticated metadata-owner match. An expired account offers sign-in again rather than a futile retry. Show a region only when its storefront can be mapped reliably. Passwords only in secure input, 2FA field separate.
 - Close ordinary popovers on outside click inside the app, outside the main window, app deactivation, Escape, or another popover opening.
 - Use native transient behavior plus appropriate app/window notifications. System menus/Keychain panels must not destroy an auth flow. Dismissal is not task cancellation.
 - Return keyboard focus to the triggering control. No Accessibility permission just to dismiss a panel.

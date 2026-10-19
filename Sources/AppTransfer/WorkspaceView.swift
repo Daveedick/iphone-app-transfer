@@ -41,6 +41,7 @@ struct WorkspaceView: View {
     @State private var scrollIndex = 0
     @FocusState private var focusedLibraryID: String?
     @State private var libraryKeyboardNavigation = false
+    @State private var showSelectionAccounts = false
 
     init(model: AppModel) {
         self.model = model
@@ -80,12 +81,13 @@ struct WorkspaceView: View {
         } message: {
             Text(deletionMessage)
         }
-        .onChange(of: model.showSettings) { _, shown in if shown { model.showAccounts = false } }
-        .onChange(of: model.showAccounts) { _, shown in if shown { model.showSettings = false } }
+        .onChange(of: model.showSettings) { _, shown in if shown { model.showAccounts = false; showSelectionAccounts = false } }
+        .onChange(of: model.showAccounts) { _, shown in if shown { model.showSettings = false; showSelectionAccounts = false } }
+        .onChange(of: showSelectionAccounts) { _, shown in if shown { model.showSettings = false; model.showAccounts = false } }
         .onReceive(NotificationCenter.default.publisher(for: NSApplication.didResignActiveNotification)) { _ in
-            model.showSettings = false; model.showAccounts = false
+            model.showSettings = false; model.showAccounts = false; showSelectionAccounts = false
         }
-        .onExitCommand { model.showSettings = false; model.showAccounts = false }
+        .onExitCommand { model.showSettings = false; model.showAccounts = false; showSelectionAccounts = false }
         .onChange(of: focusedLibraryID) { _, _ in
             if NSApp.currentEvent?.type == .keyDown { libraryKeyboardNavigation = true }
         }
@@ -105,7 +107,7 @@ struct WorkspaceView: View {
             Button { model.showAccounts.toggle() } label: {
                 HStack(spacing: 6) {
                     Image(systemName: "person.crop.circle")
-                    Text(prefs.t("Аккаунты", "Accounts"))
+                    Text(prefs.t("Аккаунты App Store", "App Store Accounts"))
                     if !model.accounts.isEmpty { Text("\(model.accounts.count)").font(.system(size: 10)).foregroundStyle(.secondary) }
                 }
             }
@@ -213,7 +215,7 @@ struct WorkspaceView: View {
                 Text(prefs.t("Библиотека", "Library")).font(.system(size: 13, weight: .semibold))
                 Spacer()
                 Image(systemName: "info.circle").foregroundStyle(.secondary)
-                    .help(prefs.t("Здесь хранятся скачанные приложения для установки на другие устройства. Может потребоваться Apple Account, под которым они скачаны.", "Downloaded apps are stored here for installation on other devices. The Apple Account used to obtain an app may be required."))
+                    .help(prefs.t("Здесь хранятся IPA для установки на устройства. На iPhone может потребоваться аккаунт, которым получен IPA. Вход в само приложение выполняется отдельно; данные и действующие сессии не переносятся.", "IPA files are stored here for installation on devices. iPhone may require the account used to obtain an IPA. Sign in to the app separately; local data and existing sessions are not transferred."))
             }.frame(height: 68)
             WorkspaceSearchField(text: $librarySearch, prompt: prefs.t("Найти приложение", "Find an app"), clearLabel: prefs.t("Очистить поиск", "Clear search"))
             Text("\(model.library.count) IPA · \(readableBytes(model.library.reduce(0) { $0 + $1.bytes }))")
@@ -276,19 +278,39 @@ struct WorkspaceView: View {
                 Divider()
                 Text(item.app.bundleID)
                 Text(prefs.t("Сборка: ", "Build: ") + (item.app.build.isEmpty ? "—" : item.app.build))
-                Text(item.accountEmail ?? prefs.t("Аккаунт не указан", "Account unspecified"))
+                ForEach(prefs.archiveAccountLines(item.archiveAccounts), id: \.self) { Text($0) }
+                Text(prefs.iPhoneAccountHint(item.archiveAccounts))
                 if !item.hasSinf { Text(prefs.t("В IPA нет метаданных лицензии App Store", "No App Store license metadata in this IPA")) }
             }
-            .help("\(item.app.name) \(item.app.version)\n\(item.accountEmail ?? prefs.t("Аккаунт не указан", "Account unspecified"))")
+            .help((["\(item.app.name) \(item.app.version)"] + prefs.archiveAccountLines(item.archiveAccounts) + [prefs.iPhoneAccountHint(item.archiveAccounts)]).joined(separator: "\n"))
+            .accessibilityHint((prefs.archiveAccountLines(item.archiveAccounts) + [prefs.iPhoneAccountHint(item.archiveAccounts)]).joined(separator: ". "))
     }
 
     private var selectionBar: some View {
         HStack(spacing: 10) {
-            HStack(spacing: 7) {
-                Text(selectionTitle).font(.system(size: 12, weight: .medium)).lineLimit(1)
-                Text("· " + selectionLocationName).font(.system(size: 11)).foregroundStyle(.secondary).lineLimit(1)
-            }
-            Spacer(minLength: 10)
+            VStack(alignment: .leading, spacing: 3) {
+                HStack(spacing: 7) {
+                    Text(selectionTitle).font(.system(size: 12, weight: .medium)).lineLimit(1)
+                    Text("· " + selectionLocationName).font(.system(size: 11)).foregroundStyle(.secondary).lineLimit(1)
+                }
+                HStack(spacing: 5) {
+                    Text(selectionAccountSummary).font(.system(size: 10.5)).foregroundStyle(.secondary).lineLimit(1).truncationMode(.middle)
+                        .help(selectionAccountDetails.joined(separator: "\n\n"))
+                        .accessibilityLabel(selectionAccountSummary)
+                    Button { showSelectionAccounts.toggle() } label: { Image(systemName: "info.circle").font(.system(size: 10.5)).foregroundStyle(.secondary) }
+                        .buttonStyle(.plain).accessibilityLabel(prefs.t("Подробности об аккаунтах выбранных приложений", "Account details for selected apps"))
+                        .popover(isPresented: $showSelectionAccounts) {
+                            ScrollView {
+                                VStack(alignment: .leading, spacing: 14) {
+                                    Text(prefs.t("Аккаунты выбранных приложений", "Accounts for selected apps")).font(.system(size: 13, weight: .semibold))
+                                    ForEach(Array(selectionAccountDetails.enumerated()), id: \.offset) { _, detail in Text(detail).font(.system(size: 12)).textSelection(.enabled).fixedSize(horizontal: false, vertical: true) }
+                                    Text(prefs.t("Доступность зависит от региона аккаунта, прав на приложение и доступности версии. Вход в приложение на iPhone выполняется отдельно.", "Availability depends on the account region, app entitlements, and version availability. Sign in to the app on iPhone separately.")).font(.system(size: 10.5)).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                                }.padding(18).frame(width: 380, alignment: .leading)
+                            }.frame(maxHeight: 400).preferredColorScheme(prefs.colorScheme)
+                        }
+                }
+            }.frame(minWidth: 100, maxWidth: .infinity, alignment: .leading).layoutPriority(1)
+            Spacer(minLength: 2)
             if model.selectedLocation != "library" {
                 Button { model.transferSelection(to: nil) } label: { Label(prefs.t("В библиотеку", "Save to Library"), systemImage: "square.and.arrow.down") }.buttonStyle(UtilityButtonStyle())
             } else {
@@ -335,6 +357,49 @@ struct WorkspaceView: View {
         model.library.filter { librarySearch.isEmpty || $0.app.name.localizedCaseInsensitiveContains(librarySearch) || $0.app.bundleID.localizedCaseInsensitiveContains(librarySearch) || ($0.accountEmail?.localizedCaseInsensitiveContains(librarySearch) ?? false) }
     }
     private var selectionLocationName: String { model.selectedLocation == "library" ? prefs.t("Библиотека", "Library") : model.devices.first { $0.id == model.selectedLocation }?.name ?? "" }
+    private var selectedLibraryItems: [AppTransferCore.LibraryItem] { model.library.filter { model.selectedIDs.contains($0.id.uuidString) } }
+    private var selectedDeviceApps: [AppDescriptor] { model.devices.first { $0.id == model.selectedLocation }?.apps.filter { model.selectedIDs.contains($0.id) } ?? [] }
+    private var selectionAccountSummary: String {
+        if model.selectedLocation == "library" {
+            let items = selectedLibraryItems
+            guard let item = items.first else { return prefs.t("Аккаунт IPA неизвестен", "IPA account unknown") }
+            let accountKeys = items.map { item in
+                let context = item.archiveAccounts
+                return context.hasAccountConflict ? (context.downloadAccountEmail ?? "") + ":" + (context.metadataOwnerEmail ?? "") : context.suggestedAccountEmail?.lowercased() ?? "unknown"
+            }
+            if items.count > 1, Set(accountKeys).count > 1 { return prefs.t("У выбранных IPA разные аккаунты", "Selected IPAs have different accounts") }
+            return prefs.iPhoneAccountHint(item.archiveAccounts)
+        }
+        let archives = selectedDeviceApps.compactMap { model.previewArchive(for: $0) }
+        if !archives.isEmpty {
+            if archives.count < selectedDeviceApps.count { return prefs.t("IPA из библиотеки и скачивания · проверьте аккаунты", "Library IPAs and downloads · review accounts") }
+            let emails = Set(archives.map { $0.archiveAccounts.suggestedAccountEmail?.lowercased() ?? "unknown" })
+            if emails.count > 1 { return prefs.t("IPA из библиотеки · разные аккаунты", "Library IPAs · different accounts") }
+            return prefs.t("IPA из библиотеки", "Library IPA") + " · " + prefs.iPhoneAccountHint(archives.first?.archiveAccounts)
+        }
+        let selections = selectedDeviceApps.map { model.accountSelection(for: $0) }
+        guard let first = selections.first else { return prefs.downloadAccountLine(nil) }
+        if Set(selections.map { $0.account?.id ?? "" }).count > 1 { return prefs.t("Для скачивания используются разные аккаунты", "Downloads use different accounts") }
+        let line = prefs.downloadAccountLine(first.account?.email)
+        if first.account == nil { return line }
+        let reasons = Set(selections.map { $0.reason.rawValue })
+        return reasons.count == 1 ? line + " · " + prefs.accountReason(first.reason) : line
+    }
+    private var selectionAccountDetails: [String] {
+        if model.selectedLocation == "library" {
+            return selectedLibraryItems.map { ([$0.app.name + " " + $0.app.version] + prefs.archiveAccountLines($0.archiveAccounts) + [prefs.iPhoneAccountHint($0.archiveAccounts)]).joined(separator: "\n") }
+        }
+        return selectedDeviceApps.map { app in
+            if let item = model.previewArchive(for: app) {
+                return ([app.name + " " + app.version, prefs.t("Подходящий IPA уже в библиотеке; файл будет проверен перед использованием.", "A matching IPA is already in the library; its file will be verified before use.")] + prefs.archiveAccountLines(item.archiveAccounts) + [prefs.iPhoneAccountHint(item.archiveAccounts)]).joined(separator: "\n")
+            }
+            let selection = model.accountSelection(for: app)
+            var lines = [app.name + " " + app.version, prefs.downloadAccountLine(selection.account?.email)]
+            if selection.account != nil { lines.append(prefs.accountReason(selection.reason)) }
+            if let email = app.ownerEmail { lines.append(prefs.t("Подсказка из метаданных телефона: \(email)", "Hint from phone metadata: \(email)")) }
+            return lines.joined(separator: "\n")
+        }
+    }
     private var selectionTitle: String {
         if model.selectedIDs.count == 1, let id = model.selectedIDs.first {
             if model.selectedLocation == "library", let item = model.library.first(where: { $0.id.uuidString == id }) { return item.app.name }
@@ -443,7 +508,10 @@ private struct DeviceColumn: View {
                 }
                 Divider()
                 Text(app.bundleID)
-                if let email = app.ownerEmail { Text(email) }
+                Text(prefs.downloadAccountLine(model.accountSelection(for: app).account?.email))
+                if model.accountSelection(for: app).account != nil { Text(prefs.accountReason(model.accountSelection(for: app).reason)) }
+                if let email = app.ownerEmail { Text(prefs.t("Подсказка из метаданных телефона: \(email)", "Hint from phone metadata: \(email)")) }
+                Text(prefs.t("Метаданные не показывают текущий аккаунт iCloud и не подтверждают право на скачивание.", "Metadata does not identify the current iCloud account or confirm download entitlement."))
                 if app.testFlight { Text(prefs.t("TestFlight: загрузка из App Store недоступна", "TestFlight: App Store download unavailable")) }
                 else { Text(prefs.t("Возможность скачивания ещё не проверена", "Download availability has not been checked")) }
             }
@@ -474,8 +542,26 @@ struct TransferJobRow: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 7) {
             summary
+            accountDetails
             recovery
         }.padding(.vertical, 9)
+    }
+    private var accountDetails: some View {
+        VStack(alignment: .leading, spacing: 3) {
+            Text(prefs.jobAccountLine(job)).lineLimit(1).truncationMode(.middle).help(prefs.jobAccountLine(job)).accessibilityIdentifier("job-account-" + job.id.uuidString)
+            if let context = job.archiveAccounts {
+                ForEach(Array(prefs.archiveAccountLines(context).dropFirst()), id: \.self) { Text($0).fixedSize(horizontal: false, vertical: true).textSelection(.enabled) }
+                if job.stage == .succeeded && job.targetDeviceID != nil {
+                    Text(prefs.installedMessage(context)).fixedSize(horizontal: false, vertical: true).textSelection(.enabled)
+                } else {
+                    Text(prefs.iPhoneAccountHint(context)).fixedSize(horizontal: false, vertical: true).textSelection(.enabled)
+                }
+            } else if job.stage == .succeeded && job.targetDeviceID != nil {
+                Text(prefs.installedMessage(nil)).fixedSize(horizontal: false, vertical: true)
+            } else if job.accountEmail != nil, job.libraryID == nil {
+                Text(prefs.accountReason(job.accountSelectionReason)).lineLimit(1)
+            }
+        }.font(.system(size: 10.5)).foregroundStyle(.secondary).padding(.leading, 27)
     }
     private var summary: some View {
         HStack(spacing: 10) {
@@ -522,9 +608,11 @@ struct TransferJobRow: View {
             Text(prefs.failureMessage(job.errorCode, fallback: job.message)).font(.system(size: 10.5)).foregroundStyle(.secondary).lineLimit(2)
             Spacer(minLength: 6)
             Menu(prefs.t("Выбрать аккаунт", "Choose account")) {
-                ForEach(model.accounts) { account in Button(account.email) { model.selectAccountForJob(jobID: job.id, accountID: account.id) } }
+                ForEach(model.accounts) { account in
+                    Button(account.authenticated ? account.email : prefs.t("\(account.email) · нужно войти снова", "\(account.email) · sign in again")) { model.selectAccountForJob(jobID: job.id, accountID: account.id) }.disabled(!account.authenticated)
+                }
                 Divider()
-                Button(prefs.t("Добавить аккаунт…", "Add account…")) { model.showAccounts = true }
+                Button(prefs.t("Открыть аккаунты App Store…", "Open App Store Accounts…")) { model.showAccounts = true }
             }.fixedSize()
         }.padding(.leading, 27)
     }
@@ -589,35 +677,86 @@ private struct AccountsPopover: View {
     private var busy: Bool { model.auth.phase == "preparing" || verifyingCode }
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text(prefs.t("Apple Account", "Apple Accounts")).font(.system(size: 15, weight: .semibold))
-            if !model.accounts.isEmpty {
-                ScrollView {
-                    VStack(spacing: 4) {
-                        ForEach(model.accounts) { account in
-                            HStack(spacing: 3) {
-                                Button { model.selectedAccountID = account.id } label: {
-                                    HStack(spacing: 10) {
-                                        VStack(alignment: .leading, spacing: 4) {
-                                            Text(account.email).font(.system(size: 12)).lineLimit(1).help(account.email)
-                                            Text(account.authenticated ? prefs.t("Авторизован", "Signed in") : prefs.t("Нужно войти снова", "Sign in again")).font(.system(size: 11)).foregroundStyle(.secondary)
-                                        }
-                                        Spacer(minLength: 4)
-                                        Image(systemName: "checkmark").font(.system(size: 11, weight: .medium)).foregroundStyle(.secondary).opacity(model.selectedAccountID == account.id ? 1 : 0)
-                                    }.padding(9).contentShape(RoundedRectangle(cornerRadius: 7))
-                                }.buttonStyle(.plain)
-                                    .background(model.selectedAccountID == account.id ? Color.primary.opacity(0.065) : .clear, in: RoundedRectangle(cornerRadius: 7))
-                                    .disabled(!account.authenticated)
-                                    .accessibilityAddTraits(model.selectedAccountID == account.id ? [.isSelected] : [])
-                                    .help(prefs.t("Использовать для следующих скачиваний", "Use for upcoming downloads"))
-                                IconUtilityButton(symbol: "arrow.clockwise", label: prefs.t("Войти снова", "Sign in again")) { email = account.email; focus = .password }
-                                IconUtilityButton(symbol: "minus.circle", label: prefs.t("Удалить авторизацию", "Remove authorization")) { removing = account }
-                            }
-                        }
-                    }
-                }.frame(maxHeight: 145)
-                WorkspaceRule()
-            }
-            if model.auth.phase == "code" || verifyingCode {
+            explanation
+            savedAccounts
+            authenticationFields
+            authenticationStatus
+            privacyFootnote
+        }
+        .padding(24).frame(width: 410).preferredColorScheme(prefs.colorScheme)
+        .onAppear { if model.auth.phase == "code" { focus = .code } }
+        .onChange(of: model.auth.phase) { _, phase in if phase == "code" { focus = .code }; if phase == "success" { password = ""; code = "" } }
+        .onDisappear { password = ""; code = "" }
+        .alert(prefs.t("Удалить локальную авторизацию?", "Remove local authorization?"), isPresented: removalPresented) {
+            Button(prefs.t("Отмена", "Cancel"), role: .cancel) { removing = nil }
+            Button(prefs.t("Удалить", "Remove"), role: .destructive) { if let removing { model.removeAccount(removing) }; removing = nil }
+        } message: { Text(removalMessage) }
+    }
+    private var explanation: some View {
+        Group {
+            Text(prefs.t("Аккаунты App Store", "App Store Accounts")).font(.system(size: 15, weight: .semibold))
+            Text(prefs.t("Войдите в аккаунт, которым получено приложение, чтобы скачать его с серверов Apple. Доступность зависит от региона аккаунта, прав на приложение и доступности версии.", "Sign in with the account used to obtain the app to download it from Apple’s servers. Availability depends on its region, app entitlements, and version availability."))
+                .font(.system(size: 11)).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+            Text(prefs.t("Добавьте другие аккаунты, если приложения получены под ними. На iPhone может потребоваться аккаунт, которым получен устанавливаемый IPA.", "Add other accounts if they were used to obtain your apps. iPhone may require the account used to obtain the IPA being installed."))
+                .font(.system(size: 11)).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+        }
+    }
+    @ViewBuilder private var savedAccounts: some View {
+        if model.accountsLoading {
+            HStack(alignment: .top, spacing: 8) {
+                ProgressView().controlSize(.mini)
+                Text(prefs.t("Читаем сохранённые аккаунты. Если macOS запросит доступ к Связке ключей, проверьте системный запрос.", "Reading saved accounts. If macOS asks for Keychain access, review the system prompt."))
+                    .font(.system(size: 10.5)).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+            }.accessibilityIdentifier("accounts-loading")
+        }
+        if !model.accounts.isEmpty {
+            ScrollView {
+                VStack(spacing: 4) {
+                    ForEach(model.accounts) { account in accountRow(account) }
+                }
+            }.frame(maxHeight: 145)
+            Text(prefs.t("Аккаунт по умолчанию используется, если среди добавленных аккаунтов не найден авторизованный аккаунт из метаданных приложения.", "The default account is used when no signed-in account matches the account in app metadata."))
+                .font(.system(size: 10.5)).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+            WorkspaceRule()
+        }
+    }
+    private func accountRow(_ account: AppleAccount) -> some View {
+        HStack(spacing: 3) {
+            accountSelectionButton(account)
+            IconUtilityButton(symbol: "arrow.clockwise", label: prefs.t("Войти снова", "Sign in again")) { email = account.email; focus = .password }
+            IconUtilityButton(symbol: "minus.circle", label: prefs.t("Удалить авторизацию", "Remove authorization")) { removing = account }
+        }
+    }
+    private func accountSelectionButton(_ account: AppleAccount) -> some View {
+        let isDefault = model.selectedAccountID == account.id
+        let state = account.authenticated ? prefs.t("Авторизован", "Signed in") : prefs.t("Нужно войти снова", "Sign in again")
+        let accessibilityName = account.email + ". " + state + (isDefault ? ". " + prefs.t("По умолчанию", "Default") : "")
+        return Button { model.selectedAccountID = account.id } label: {
+            HStack(spacing: 10) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(account.email).font(.system(size: 12)).lineLimit(1).truncationMode(.middle).help(account.email)
+                    HStack(spacing: 5) {
+                        Text(state)
+                        if let region = prefs.storefrontRegion(account.storefront) { Text("· " + region) }
+                        if isDefault { Text(prefs.t("· По умолчанию", "· Default")) }
+                    }.font(.system(size: 10.5)).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                }
+                Spacer(minLength: 4)
+                Image(systemName: "checkmark").font(.system(size: 11, weight: .medium)).foregroundStyle(.secondary).opacity(isDefault ? 1 : 0)
+            }.padding(9).contentShape(RoundedRectangle(cornerRadius: 7))
+        }.buttonStyle(.plain)
+            .background(isDefault ? Color.primary.opacity(0.065) : .clear, in: RoundedRectangle(cornerRadius: 7))
+            .disabled(!account.authenticated)
+            .accessibilityAddTraits(isDefault ? [.isSelected] : [])
+            .accessibilityLabel(accessibilityName)
+            .help(prefs.t("Сделать аккаунтом по умолчанию. Используется, если среди добавленных аккаунтов не найден авторизованный аккаунт из метаданных приложения.", "Set as default. Used when no signed-in account matches the account in app metadata."))
+    }
+    @ViewBuilder private var authenticationFields: some View {
+        if model.auth.phase == "code" || verifyingCode { codeFields }
+        else { credentialFields }
+    }
+    private var codeFields: some View {
+        Group {
                 Text(prefs.t("Код подтверждения", "Verification code")).font(.system(size: 12, weight: .medium))
                 Text(model.auth.email).font(.system(size: 11)).foregroundStyle(.secondary)
                 TextField(prefs.t("Код с доверенного устройства", "Code from your trusted device"), text: $code).focused($focus, equals: .code).modifier(QuietInput(focused: focus == .code)).onSubmit(submitCode).disabled(verifyingCode)
@@ -632,31 +771,31 @@ private struct AccountsPopover: View {
                     Spacer()
                     Button(prefs.t("Подтвердить", "Verify"), action: submitCode).buttonStyle(UtilityButtonStyle(prominent: true)).disabled(verifyingCode || code.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                 }
-            } else {
+        }
+    }
+    private var credentialFields: some View {
+        Group {
                 Text(prefs.t("Добавить аккаунт или войти снова", "Add an account or sign in again")).font(.system(size: 12, weight: .medium))
-                TextField("Apple Account", text: $email).focused($focus, equals: .email).modifier(QuietInput(focused: focus == .email)).disabled(busy)
+                Text(prefs.t("Email Apple Account", "Apple Account email")).font(.system(size: 10.5)).foregroundStyle(.secondary)
+                TextField(prefs.t("Email Apple Account", "Apple Account email"), text: $email).focused($focus, equals: .email).modifier(QuietInput(focused: focus == .email)).disabled(busy)
+                Text(prefs.t("Пароль", "Password")).font(.system(size: 10.5)).foregroundStyle(.secondary)
                 SecureField(prefs.t("Пароль", "Password"), text: $password).focused($focus, equals: .password).modifier(QuietInput(focused: focus == .password)).onSubmit(login).disabled(busy)
                 HStack {
                     if busy { ProgressView().controlSize(.small); Text(prefs.t("Подготовка входа…", "Preparing sign-in…")).font(.system(size: 11)).foregroundStyle(.secondary) }
                     Spacer()
                     Button(prefs.t("Войти", "Sign in"), action: login).buttonStyle(UtilityButtonStyle(prominent: true)).disabled(busy || email.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || password.isEmpty)
                 }
-            }
-            if let message = model.auth.message {
-                Text(message).font(.system(size: 11)).foregroundStyle(model.auth.phase == "failed" ? Color.orange : Color.secondary).fixedSize(horizontal: false, vertical: true).textSelection(.enabled)
-            }
-            Text(prefs.t("Пароль и код не записываются в журнал. IPA может потребовать этот аккаунт при запуске на iPhone.", "Passwords and verification codes are never written to activity. An IPA may require its original account when launched on iPhone."))
-                .font(.system(size: 10.5)).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
         }
-        .padding(24).frame(width: 410).preferredColorScheme(prefs.colorScheme)
-        .onAppear { if model.auth.phase == "code" { focus = .code } }
-        .onChange(of: model.auth.phase) { _, phase in if phase == "code" { focus = .code }; if phase == "success" { password = ""; code = "" } }
-        .onDisappear { password = ""; code = "" }
-        .alert(prefs.t("Удалить локальную авторизацию?", "Remove local authorization?"), isPresented: Binding(get: { removing != nil }, set: { if !$0 { removing = nil } })) {
-            Button(prefs.t("Отмена", "Cancel"), role: .cancel) { removing = nil }
-            Button(prefs.t("Удалить", "Remove"), role: .destructive) { if let removing { model.removeAccount(removing) }; removing = nil }
-        } message: { Text((removing?.email ?? "") + "\n" + prefs.t("Сохранённые IPA останутся в библиотеке. Для скачивания потребуется войти снова.", "Saved IPA files remain in the library. Sign in again to download apps.")) }
     }
+    @ViewBuilder private var authenticationStatus: some View {
+        if let message = model.auth.message { Text(message).font(.system(size: 11)).foregroundStyle(model.auth.phase == "failed" ? Color.orange : Color.secondary).fixedSize(horizontal: false, vertical: true).textSelection(.enabled) }
+    }
+    private var privacyFootnote: some View {
+        Text(prefs.t("Пароль и код не записываются в журнал. Вход здесь не меняет аккаунт iCloud на iPhone. Вход в само приложение выполняется отдельно.", "Passwords and verification codes are never written to activity. Signing in here does not change the iCloud account on iPhone. Sign in to the app separately."))
+            .font(.system(size: 10.5)).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+    }
+    private var removalPresented: Binding<Bool> { Binding(get: { removing != nil }, set: { if !$0 { removing = nil } }) }
+    private var removalMessage: String { (removing?.email ?? "") + "\n" + prefs.t("Сохранённые IPA останутся в библиотеке. Для скачивания потребуется войти снова.", "Saved IPA files remain in the library. Sign in again to download apps.") }
     private func login() { guard !busy, !email.isEmpty, !password.isEmpty else { return }; model.beginLogin(email: email.trimmingCharacters(in: .whitespacesAndNewlines), password: password); password = "" }
     private func submitCode() { let value = code.trimmingCharacters(in: .whitespacesAndNewlines); guard !verifyingCode, !value.isEmpty else { return }; model.submitCode(value); code = "" }
 }
@@ -684,10 +823,16 @@ private struct ActivityView: View {
                                 VStack(alignment: .leading, spacing: 6) {
                                     HStack { Text(entry.appName).fontWeight(.medium); Text(entry.version).foregroundStyle(.secondary); Spacer(); Text(entry.date, format: .dateTime.day().month().hour().minute()).foregroundStyle(.secondary).font(.system(size: 10.5)) }
                                     Text(entry.source + " → " + entry.target).foregroundStyle(.secondary)
-                                    if let email = entry.accountEmail { Text(email).foregroundStyle(.secondary).textSelection(.enabled) }
+                                    if let context = entry.archiveAccounts {
+                                        ForEach(prefs.archiveAccountLines(context), id: \.self) { Text($0).foregroundStyle(.secondary).textSelection(.enabled) }
+                                        if entry.installedOnDevice != true { Text(prefs.iPhoneAccountHint(context)).foregroundStyle(.secondary).textSelection(.enabled) }
+                                    } else if let email = entry.accountEmail {
+                                        Text(prefs.t("Аккаунт в записи журнала: \(email)", "Account recorded in activity: \(email)")).foregroundStyle(.secondary).textSelection(.enabled)
+                                    }
                                     HStack(alignment: .top) {
                                         Text(prefs.stageTitle(entry.stage)).foregroundStyle(entry.stage == .failed ? Color.orange : Color.secondary)
-                                        if let message = entry.message, !message.isEmpty { Text("· " + prefs.localizedMessage(message)).foregroundStyle(.secondary).textSelection(.enabled) }
+                                        if entry.installedOnDevice == true { Text(prefs.installedMessage(entry.archiveAccounts)).foregroundStyle(.secondary).textSelection(.enabled) }
+                                        else if let message = entry.message, !message.isEmpty { Text("· " + prefs.localizedMessage(message)).foregroundStyle(.secondary).textSelection(.enabled) }
                                     }
                                 }
                             }.font(.system(size: 12)).padding(.vertical, 15).padding(.horizontal, 22)
@@ -698,5 +843,5 @@ private struct ActivityView: View {
             }
         }.frame(maxWidth: .infinity, maxHeight: .infinity)
     }
-    private var filteredActivity: [ActivityEntry] { model.activity.filter { search.isEmpty || $0.appName.localizedCaseInsensitiveContains(search) || $0.source.localizedCaseInsensitiveContains(search) || $0.target.localizedCaseInsensitiveContains(search) || ($0.accountEmail?.localizedCaseInsensitiveContains(search) ?? false) } }
+    private var filteredActivity: [ActivityEntry] { model.activity.filter { search.isEmpty || $0.appName.localizedCaseInsensitiveContains(search) || $0.source.localizedCaseInsensitiveContains(search) || $0.target.localizedCaseInsensitiveContains(search) || ($0.accountEmail?.localizedCaseInsensitiveContains(search) ?? false) || ($0.archiveAccounts?.downloadAccountEmail?.localizedCaseInsensitiveContains(search) ?? false) || ($0.archiveAccounts?.metadataOwnerEmail?.localizedCaseInsensitiveContains(search) ?? false) } }
 }

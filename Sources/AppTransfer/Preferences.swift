@@ -13,6 +13,57 @@ import AppTransferCore
     func t(_ ru:String,_ en:String)->String{language=="ru" ? ru:en}
     var rowHeight:CGFloat{density=="compact" ? 46:57}
     var colorScheme:ColorScheme?{theme=="light" ? .light:theme=="dark" ? .dark:nil}
+    func accountReason(_ reason:AccountSelectionReason?)->String {
+        switch reason {
+        case .metadataOwner:return t("По метаданным приложения","From app metadata")
+        case .defaultAccount:return t("Аккаунт по умолчанию","Default account")
+        case .onlyAccount:return t("Единственный доступный аккаунт","Only available account")
+        case .explicit:return t("Выбран для этой задачи","Chosen for this task")
+        case .unresolved:return t("Выберите аккаунт App Store","Choose an App Store account")
+        case .none:return t("Аккаунт сохранён в задаче","Account saved with this task")
+        }
+    }
+    func downloadAccountLine(_ email:String?,downloading:Bool=false)->String {
+        guard let email,!email.isEmpty else{return t("Для скачивания нужен аккаунт App Store","An App Store account is required to download")}
+        return downloading ? t("Скачивается через: \(email)","Downloading via: \(email)") : t("Скачать через: \(email)","Download via: \(email)")
+    }
+    func archiveAccountLines(_ context:ArchiveAccountContext?)->[String] {
+        guard let context else{return [t("Аккаунт IPA неизвестен","IPA account unknown")]}
+        var lines:[String]=[]
+        if let email=context.downloadAccountEmail {
+            lines.append(t("Скачано через: \(email)","Downloaded via: \(email)"))
+        }else if context.origin == .imported {
+            lines.append(t("Импортированный IPA","Imported IPA"))
+        }else {
+            lines.append(t("Аккаунт скачивания неизвестен","Download account unknown"))
+        }
+        if let email=context.metadataOwnerEmail,context.downloadAccountEmail==nil || context.hasAccountConflict {
+            lines.append(t("Аккаунт из метаданных IPA: \(email)","Account in IPA metadata: \(email)"))
+        }
+        if context.suggestedAccountEmail==nil && !context.hasAccountConflict {lines.append(t("Аккаунт для iPhone неизвестен","Account for iPhone unknown"))}
+        return lines
+    }
+    func iPhoneAccountHint(_ context:ArchiveAccountContext?)->String {
+        if context?.hasAccountConflict==true {return t("Аккаунты скачивания и IPA различаются. Аккаунт для запуска на iPhone не подтверждён.","Download and IPA accounts differ. The account needed to launch on iPhone is unconfirmed.")}
+        if let email=context?.suggestedAccountEmail {return t("На iPhone может потребоваться: \(email)","May be required on iPhone: \(email)")}
+        return t("На iPhone может потребоваться аккаунт, которым получен IPA; определить его не удалось.","iPhone may require the account used to obtain the IPA; it could not be identified.")
+    }
+    func installedMessage(_ context:ArchiveAccountContext?)->String {
+        t("Установка подтверждена. Откройте приложение на iPhone.","Installation confirmed. Open the app on iPhone.")+" "+iPhoneAccountHint(context)
+    }
+    func jobAccountLine(_ job:TransferJob)->String {
+        if let context=job.archiveAccounts {return archiveAccountLines(context).first ?? t("Установка из библиотеки","Installing from library")}
+        if job.libraryID != nil {return t("IPA из библиотеки · аккаунт IPA неизвестен","Library IPA · IPA account unknown")}
+        if job.stage.terminal,let email=job.accountEmail {return t("Аккаунт в задаче: \(email)","Account recorded in task: \(email)")}
+        return downloadAccountLine(job.accountEmail,downloading:job.stage == .downloading)
+    }
+    func storefrontRegion(_ storefront:String?)->String? {
+        guard let storefront else{return nil}
+        let code=storefront.trimmingCharacters(in:.whitespacesAndNewlines).uppercased()
+        // Numeric Apple storefront identifiers are not ISO country codes.
+        guard code.count==2,code.unicodeScalars.allSatisfy({CharacterSet.letters.contains($0)}),Locale.Region.isoRegions.contains(where:{$0.identifier==code}) else{return nil}
+        return Locale(identifier:language=="ru" ? "ru_RU":"en_US").localizedString(forRegionCode:code)
+    }
     func stageTitle(_ stage:JobStage)->String {
         switch stage {
         case .queued:return t("В очереди","Queued")

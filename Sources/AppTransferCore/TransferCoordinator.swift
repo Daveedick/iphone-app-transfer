@@ -72,7 +72,8 @@ public actor TransferCoordinator {
     }
     public func assignAccount(_ id:UUID,account:AppleAccount) async {
         guard id != activeID,let i=jobs.firstIndex(where:{$0.id==id}) else{return}
-        jobs[i].accountID=account.id;jobs[i].accountEmail=account.email;jobs[i].libraryID=nil;jobs[i].stage = .queued;jobs[i].errorCode=nil;jobs[i].message=nil;jobs[i].cancelRequested=false;await persist();pump()
+        guard account.authenticated else {return}
+        jobs[i].accountID=account.id;jobs[i].accountEmail=account.email;jobs[i].accountSelectionReason = .explicit;jobs[i].archiveAccounts=nil;jobs[i].libraryID=nil;jobs[i].stage = .queued;jobs[i].errorCode=nil;jobs[i].message=nil;jobs[i].cancelRequested=false;await persist();pump()
     }
     public func acceptAlternative(_ id:UUID) async {
         guard let i=jobs.firstIndex(where:{$0.id==id}),let alternative=jobs[i].alternative,id != activeID else{return}
@@ -111,7 +112,7 @@ public actor TransferCoordinator {
         let changed=current != stage;jobs[i].stage=stage;jobs[i].progress=progress.map{min(1,max(0,$0))};jobs[i].updated=Date()
         if changed {await persist()}
     }
-    private func bindLibrary(_ id:UUID,item:LibraryItem) async {guard let i=jobs.firstIndex(where:{$0.id==id}) else{return};jobs[i].libraryID=item.id;if jobs[i].accountEmail==nil {jobs[i].accountEmail=item.accountEmail};await persist()}
+    private func bindLibrary(_ id:UUID,item:LibraryItem) async {guard let i=jobs.firstIndex(where:{$0.id==id}) else{return};jobs[i].libraryID=item.id;jobs[i].archiveAccounts=item.archiveAccounts;if jobs[i].accountEmail==nil {jobs[i].accountEmail=item.accountEmail};await persist()}
     private func checkCancellation(_ id:UUID) throws {if current(id)?.cancelRequested==true {throw AppFailure("canceled","Operation canceled.")}}
     private func run(_ id:UUID) async {
         var staged:URL?
@@ -130,7 +131,8 @@ public actor TransferCoordinator {
                 guard !job.app.testFlight,let storeID=job.app.storeItemID,storeID>0 else {throw AppFailure("unsupportedApp","App Store metadata is missing or this app was installed through TestFlight.")}
                 guard let accountID=job.accountID else {await update(id,stage:.awaitingAccount,message:"Choose an Apple Account to download this application.",code:"accountRequired");return}
                 let accounts=try await store.accounts()
-                guard accounts.contains(where:{$0.id==accountID && $0.authenticated}) else {await update(id,stage:.awaitingAccount,message:"Sign in to the Apple Account used for this application.",code:"authenticationRequired");return}
+                guard let downloadAccount=accounts.first(where:{$0.id==accountID && $0.authenticated}) else {await update(id,stage:.awaitingAccount,message:"Sign in to the Apple Account used for this application.",code:"authenticationRequired");return}
+                if let i=jobs.firstIndex(where:{$0.id==id}) {jobs[i].accountEmail=downloadAccount.email}
                 var requested=job.app
                 do {requested=try await store.versionInfo(app:job.app,accountID:accountID,latest:false)} catch {
                     let failure=error as? AppFailure
@@ -150,7 +152,7 @@ public actor TransferCoordinator {
                 try checkCancellation(id);await update(id,stage:.validating)
                 let inspection=try await Task.detached(priority:.utility){try IPAInspector.inspect(output,expected:requested)}.value
                 try checkCancellation(id)
-                item=try await library.add(stagedURL:output,inspection:inspection,accountID:accountID,email:job.accountEmail)
+                item=try await library.add(stagedURL:output,inspection:inspection,accountID:accountID,email:downloadAccount.email)
                 staged=nil
             }
             guard let item else {throw AppFailure("missingArchive","No validated archive is available.")}

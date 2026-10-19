@@ -24,6 +24,7 @@ struct QueueFeedback: Identifiable {
     @Published var jobs:[TransferJob]=[]
     @Published var activity:[ActivityEntry]=[]
     @Published var accounts:[AppleAccount]=[]
+    @Published var accountsLoading=true
     @Published var selectedLocation:String?
     @Published var selectedIDs:Set<String>=[]
     @Published var currentTab="devices"
@@ -72,7 +73,10 @@ struct QueueFeedback: Identifiable {
         Task{[weak self] in
             guard let self else{return}
             do {try await self.coordinator?.start()}catch{self.present(error)}
-            await self.reloadAccounts();self.refresh();self.startPolling()
+            if let coordinator=self.coordinator {self.applyQueueSnapshot(await coordinator.snapshot())}
+            if let libraryStore=self.libraryStore {self.library=await libraryStore.snapshot()}
+            self.refresh();self.startPolling()
+            await self.reloadAccounts()
         }
     }
     func refresh(){
@@ -130,12 +134,12 @@ struct QueueFeedback: Identifiable {
         var requests:[TransferJob]=[]
         if !payload.libraryIDs.isEmpty {
             for item in library.filter({payload.libraryIDs.contains($0.id)}) {
-                requests.append(TransferJob(app:item.app,sourceName:prefs.t("Библиотека","Library"),targetDeviceID:target,targetName:targetName,accountID:item.accountID,accountEmail:item.accountEmail,libraryID:item.id))
+                requests.append(TransferJob(app:item.app,sourceName:prefs.t("Библиотека","Library"),targetDeviceID:target,targetName:targetName,accountID:item.accountID,accountEmail:item.accountEmail,libraryID:item.id,archiveAccounts:item.archiveAccounts))
             }
         }else if let source=payload.sourceDeviceID,let phone=devices.first(where:{$0.id==source}) {
             for app in phone.apps.filter({payload.bundleIDs.contains($0.bundleID)}) {
-                let account=preferredAccount(for:app)
-                requests.append(TransferJob(app:app,sourceDeviceID:source,sourceName:phone.name,targetDeviceID:target,targetName:targetName,accountID:account?.id,accountEmail:account?.email))
+                let selection=accountSelection(for:app)
+                requests.append(TransferJob(app:app,sourceDeviceID:source,sourceName:phone.name,targetDeviceID:target,targetName:targetName,accountID:selection.account?.id,accountEmail:selection.account?.email,accountSelectionReason:selection.reason))
             }
         }
         guard !requests.isEmpty else{return}
@@ -155,10 +159,13 @@ struct QueueFeedback: Identifiable {
         }
         currentTab="devices"
     }
-    private func preferredAccount(for app:AppDescriptor)->AppleAccount? {
-        if let email=app.ownerEmail,let matching=accounts.first(where:{$0.email.caseInsensitiveCompare(email) == .orderedSame && $0.authenticated}) {return matching}
-        if let id=selectedAccountID {return accounts.first{$0.id==id && $0.authenticated}}
-        return accounts.count==1 && accounts[0].authenticated ? accounts[0]:nil
+    func accountSelection(for app:AppDescriptor)->AccountSelection {
+        AccountResolver.resolve(for:app,accounts:accounts,defaultAccountID:selectedAccountID)
+    }
+    /// Preview only; the coordinator rechecks and validates the file before use.
+    func previewArchive(for app:AppDescriptor)->AppTransferCore.LibraryItem? {
+        let accountID=accountSelection(for:app).account?.id
+        return library.first{!$0.missing && $0.app.sameBuild(as:app) && $0.accountID==accountID}
     }
     func requestDeleteSelection(){guard currentTab=="devices",prefs.libraryVisible,selectedLocation=="library" else{return};pendingDeletion=library.filter{selectedIDs.contains($0.id.uuidString)}}
     func confirmDelete(){
@@ -175,7 +182,7 @@ struct QueueFeedback: Identifiable {
     func cancelJob(_ id:UUID){guard !isDemo else{return};Task{await coordinator?.cancel(id)}}
     func retryJob(_ id:UUID){guard !isDemo,let coordinator else{return};Task{if await coordinator.retry(id){applyQueueSnapshot(await coordinator.snapshot());showQueueFeedback(ids:[id],focus:id,message:prefs.t("Повторная попытка: ","Retry queued: ")+(jobs.first{$0.id==id}?.app.name ?? ""))}}}
     func toggleQueuePaused(){guard !isDemo else{return};Task{await coordinator?.setPaused(!queuePaused)}}
-    func selectAccountForJob(jobID:UUID,accountID:String){guard let account=accounts.first(where:{$0.id==accountID}) else{return};Task{await coordinator?.assignAccount(jobID,account:account)}}
+    func selectAccountForJob(jobID:UUID,accountID:String){guard !isDemo,let account=accounts.first(where:{$0.id==accountID && $0.authenticated}) else{return};Task{await coordinator?.assignAccount(jobID,account:account)}}
     func acceptAlternative(_ id:UUID){guard !isDemo else{return};Task{await coordinator?.acceptAlternative(id)}}
     func dismissError(){globalError=nil}
     var displayedJobs:[TransferJob]{QueuePresentation.newestFirst(jobs)}
@@ -200,7 +207,12 @@ struct QueueFeedback: Identifiable {
         let key="library/"+item.id.uuidString;if let cached=imageCache[key]{return cached}
         guard !isDemo,let image=NSImage(contentsOf:libraryRoot.appendingPathComponent("Icons/\(item.id.uuidString).png")) else{return nil};imageCache[key]=image;return image
     }
-    private func reloadAccounts() async {guard let store else{return};do{accounts=try await store.accounts();if let selectedAccountID,!accounts.contains(where:{$0.id==selectedAccountID}){self.selectedAccountID=nil};if accounts.count==1{selectedAccountID=accounts[0].id}}catch{present(error)}}
+    private func reloadAccounts() async {
+        guard let store else{accountsLoading=false;return}
+        accountsLoading=true
+        defer{accountsLoading=false}
+        do{accounts=try await store.accounts();if let selectedAccountID,!accounts.contains(where:{$0.id==selectedAccountID}){self.selectedAccountID=nil};if accounts.count==1{selectedAccountID=accounts[0].id}}catch{present(error)}
+    }
     func beginLogin(email:String,password:String){
         guard !isDemo,let store,!email.trimmingCharacters(in:.whitespacesAndNewlines).isEmpty,!password.isEmpty else{return}
         let email=email.trimmingCharacters(in:.whitespacesAndNewlines)
@@ -226,8 +238,10 @@ struct QueueFeedback: Identifiable {
     private func notify(_ message:String){statusMessage=message;toastTask?.cancel();toastTask=Task{try? await Task.sleep(nanoseconds:4_000_000_000);if !Task.isCancelled{statusMessage=nil}}}
     func shutdown(){pollTask?.cancel();queueFeedbackTask?.cancel();if let store{Task{await store.shutdown()}}}
     private func loadDemo(){
-        func app(_ bundle:String,_ name:String,_ version:String)->AppDescriptor{AppDescriptor(bundleID:bundle,name:name,version:version,build:"1",storeItemID:1,externalVersionID:"1",ownerEmail:"david@example.com")}
-        let avito=app("example.avito","Авито","200.5"),mail=app("example.mail","Mail App","15.92.0"),craft=app("example.craftersy","Craftersy","5.1"),yplaces=app("example.yplaces","YPLACES","1.30.1"),telegram=app("example.telegram","Telegram","12.0"),advance=app("example.advance","Advance","1.2"),au=app("example.au","AU","222.1"),online=app("example.online","Online","16.0.0"),whatsapp=app("example.whatsapp","WhatsApp","25.28")
+        accountsLoading=false
+        let longEmail="download.account.with.a.long.address@example.com"
+        func app(_ bundle:String,_ name:String,_ version:String,_ owner:String?="david@example.com")->AppDescriptor{AppDescriptor(bundleID:bundle,name:name,version:version,build:"1",storeItemID:1,externalVersionID:"1",ownerEmail:owner)}
+        let avito=app("example.avito","Авито","200.5","angelina@example.com"),mail=app("example.mail","Mail App","15.92.0",longEmail),craft=app("example.craftersy","Craftersy","5.1","previous.owner@example.com"),yplaces=app("example.yplaces","YPLACES","1.30.1"),telegram=app("example.telegram","Telegram","12.0"),advance=app("example.advance","Advance","1.2"),au=app("example.au","AU","222.1"),online=app("example.online","Online","16.0.0"),whatsapp=app("example.whatsapp","WhatsApp","25.28")
         devices=[Phone(id:"demo-14",name:"Ангелина",model:"iPhone 14 Pro Max",iOS:"27.0.1",freeBytes:64_000_000_000,apps:[avito,app("example.tbank","Т-Банк","6.13.6"),yplaces,telegram,whatsapp,app("example.youtube","YouTube","20.40"),app("example.spotify","Spotify","9.0")]),Phone(id:"demo-16",name:"Давид",model:"iPhone 16 Pro Max",iOS:"18.5",freeBytes:128_000_000_000,apps:[craft,au,online,advance,mail,telegram]),Phone(id:"demo-17",name:"Ангелина",model:"iPhone 17 Pro Max",iOS:"27.0.1",freeBytes:204_000_000_000,apps:[avito,mail,telegram,whatsapp])]
         if let index=CommandLine.arguments.firstIndex(of:"--demo-device-count"),CommandLine.arguments.indices.contains(index+1),let count=Int(CommandLine.arguments[index+1]),count>devices.count,count<=20{
             let examples=devices
@@ -236,10 +250,24 @@ struct QueueFeedback: Identifiable {
                 devices.append(Phone(id:"demo-extra-\(number)",name:prefs.t("Демо iPhone ","Demo iPhone ")+String(number),model:example.model,iOS:example.iOS,freeBytes:example.freeBytes,apps:example.apps))
             }
         }
-        library=[AppTransferCore.LibraryItem(app:avito,accountID:"demo-account",accountEmail:"angelina@example.com",relativePath:"demo.ipa",bytes:174_000_000,sha256:"demo",hasSinf:true),AppTransferCore.LibraryItem(app:mail,accountID:"demo-account",accountEmail:"angelina@example.com",relativePath:"demo2.ipa",bytes:112_000_000,sha256:"demo",hasSinf:true)]
-        var first=TransferJob(app:craft,sourceDeviceID:"demo-16",sourceName:"iPhone 16",targetDeviceID:"demo-17",targetName:"iPhone 17");first.stage = .downloading;first.progress=0.42
-        jobs=[first,TransferJob(app:yplaces,sourceDeviceID:"demo-14",sourceName:"iPhone 14",targetName:prefs.t("Библиотека","Library")),TransferJob(app:advance,sourceDeviceID:"demo-16",sourceName:"iPhone 16",targetDeviceID:"demo-17",targetName:"iPhone 17")];queuePaused=true
-        accounts=[AppleAccount(id:"demo-account",email:"david@example.com",authenticated:true),AppleAccount(id:"demo-account2",email:"angelina@example.com",authenticated:true)]
+        let imported=app("example.imported","Imported IPA","1.0",nil)
+        var downloadedCraft=craft;downloadedCraft.ownerEmail=longEmail
+        library=[
+            AppTransferCore.LibraryItem(app:avito,accountID:"demo-account2",accountEmail:"angelina@example.com",relativePath:"demo.ipa",bytes:174_000_000,sha256:"demo",hasSinf:true,origin:.appStore),
+            AppTransferCore.LibraryItem(app:mail,accountID:"demo-download",accountEmail:longEmail,relativePath:"demo2.ipa",bytes:112_000_000,sha256:"demo",hasSinf:true,origin:.appStore),
+            AppTransferCore.LibraryItem(app:downloadedCraft,accountID:"demo-download",accountEmail:longEmail,relativePath:"demo3.ipa",bytes:498_000_000,sha256:"demo",hasSinf:true,origin:.appStore),
+            AppTransferCore.LibraryItem(app:imported,accountID:nil,accountEmail:nil,relativePath:"demo-import.ipa",bytes:24_000_000,sha256:"demo",hasSinf:false,origin:.imported),
+            AppTransferCore.LibraryItem(app:telegram,accountID:nil,accountEmail:"david@example.com",relativePath:"demo-import-known.ipa",bytes:40_000_000,sha256:"demo",hasSinf:true,origin:.imported),
+            AppTransferCore.LibraryItem(app:advance,accountID:"demo-download",accountEmail:longEmail,relativePath:"demo-conflict.ipa",bytes:20_000_000,sha256:"demo",hasSinf:true,origin:.appStore)
+        ]
+        accounts=[AppleAccount(id:"demo-account",email:"david@example.com",storefront:"RU",authenticated:true),AppleAccount(id:"demo-account2",email:"angelina@example.com",storefront:"US",authenticated:true),AppleAccount(id:"demo-download",email:longEmail,storefront:"143441",authenticated:true),AppleAccount(id:"demo-expired",email:"expired.account@example.com",authenticated:false)]
+        selectedAccountID="demo-download"
+        var first=TransferJob(app:craft,sourceDeviceID:"demo-16",sourceName:"iPhone 16",targetDeviceID:"demo-17",targetName:"iPhone 17",accountID:"demo-download",accountEmail:longEmail,accountSelectionReason:.defaultAccount);first.stage = .downloading;first.progress=0.42
+        var completed=TransferJob(app:craft,sourceDeviceID:"demo-16",sourceName:"iPhone 16",targetDeviceID:"demo-17",targetName:"iPhone 17",accountID:"demo-download",accountEmail:longEmail,libraryID:library[2].id,accountSelectionReason:.explicit,archiveAccounts:library[2].archiveAccounts);completed.stage = .succeeded
+        var importedJob=TransferJob(app:imported,sourceName:prefs.t("Библиотека","Library"),targetDeviceID:"demo-17",targetName:"iPhone 17",libraryID:library[3].id,archiveAccounts:library[3].archiveAccounts);importedJob.stage = .queued
+        var waiting=TransferJob(app:online,sourceDeviceID:"demo-16",sourceName:"iPhone 16",targetName:prefs.t("Библиотека","Library"),accountID:"demo-expired",accountEmail:"expired.account@example.com",accountSelectionReason:.explicit);waiting.stage = .awaitingAccount;waiting.errorCode="sessionExpired"
+        jobs=[completed,importedJob,waiting,first];queuePaused=true
+        activity=[ActivityEntry(job:completed)]
         selectedLocation="demo-16";selectedIDs=[craft.bundleID]
     }
 }

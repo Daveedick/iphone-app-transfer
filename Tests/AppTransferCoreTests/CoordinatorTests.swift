@@ -70,14 +70,15 @@ private actor CoordinatorStore: StoreBackend {
     private let fixtures: [String: URL]
     private let failures: [String: String]
     private let gate: CoordinatorGate?
+    private let availableAccounts: [AppleAccount]
     private var downloads = 0
     private var latestRequests = 0
     private var cancellations = 0
     private var canceled = false
     private var outputPaths: [URL] = []
     private var lastProgress: (@Sendable (Double?) -> Void)?
-    init(fixtures: [String: URL] = [:], failures: [String: String] = [:], gate: CoordinatorGate? = nil) { self.fixtures = fixtures; self.failures = failures; self.gate = gate }
-    func accounts() async throws -> [AppleAccount] { [AppleAccount(id: "account-one", email: "fixture@example.invalid", authenticated: true)] }
+    init(fixtures: [String: URL] = [:], failures: [String: String] = [:], gate: CoordinatorGate? = nil, accounts: [AppleAccount] = [AppleAccount(id: "account-one", email: "fixture@example.invalid", authenticated: true)]) { self.fixtures = fixtures; self.failures = failures; self.gate = gate; self.availableAccounts = accounts }
+    func accounts() async throws -> [AppleAccount] { availableAccounts }
     func versionInfo(app: AppDescriptor, accountID: String, latest: Bool) async throws -> AppDescriptor {
         if latest { latestRequests += 1 }
         if let code = failures[app.bundleID] { throw AppFailure(code, "Synthetic account failure.") }
@@ -396,6 +397,68 @@ final class CoordinatorTests: XCTestCase {
         let managed = try await library.url(for: item), snapshot = await queue.snapshot()
         XCTAssertTrue(FileManager.default.fileExists(atPath: managed.path)); XCTAssertEqual(snapshot.jobs[0].stage, .queued)
         await queue.cancel(pending.id)
+    }
+
+    func testDownloadedArchiveAccountReplacesSourceHintAndSurvivesInHistory() async throws {
+        let root = try temporary(), device = CoordinatorDevice()
+        var sourceApp = descriptor("account-snapshot"); sourceApp.ownerEmail = "source-owner@example.invalid"
+        let store = CoordinatorStore(fixtures: [sourceApp.bundleID: try fixture(sourceApp, root: root)])
+        let (queue, library, persistence) = try coordinator(root: root, device: device, store: store)
+        var request = job(sourceApp, target: "target-a")
+        request.accountEmail = "outdated-display@example.invalid"
+        try await queue.start(); await queue.enqueue(request)
+        let finished = try await waitFor(queue) { $0.jobs.first?.stage == .succeeded && !$0.running }
+        let archive = try XCTUnwrap(finished.jobs[0].archiveAccounts)
+        XCTAssertEqual(archive.origin, .appStore)
+        XCTAssertEqual(archive.downloadAccountEmail, "fixture@example.invalid")
+        XCTAssertEqual(archive.metadataOwnerEmail, "fixture@example.invalid")
+        XCTAssertEqual(archive.suggestedAccountEmail, "fixture@example.invalid")
+        XCTAssertFalse(archive.hasAccountConflict)
+        XCTAssertEqual(finished.jobs[0].app.ownerEmail, "source-owner@example.invalid", "The source hint remains distinct from the installed archive.")
+        XCTAssertEqual(finished.jobs[0].accountEmail, "fixture@example.invalid", "Download identity comes from the actual authenticated account.")
+        XCTAssertEqual(finished.history[0].installedOnDevice, true)
+        XCTAssertEqual(finished.history[0].archiveAccounts, archive)
+        let items = await library.snapshot()
+        _ = try await library.delete(ids: Set(items.map(\.id)), busy: [], recycle: { try FileManager.default.removeItem(at: $0) })
+        let saved = try await persistence.load()
+        XCTAssertEqual(saved.history[0].archiveAccounts?.suggestedAccountEmail, "fixture@example.invalid", "Deleting an archive must not erase the recorded account hint.")
+    }
+
+    func testImportedArchiveInstallsWithoutAnyMacAccountAndKeepsMetadataHint() async throws {
+        let root = try temporary(), app = descriptor("imported-account"), device = CoordinatorDevice(), store = CoordinatorStore(accounts: [])
+        let (queue, library, _) = try coordinator(root: root, device: device, store: store)
+        let item = try await library.importIPA(fixture(app, root: root))
+        XCTAssertEqual(item.origin, .imported)
+        XCTAssertNil(item.accountID)
+        XCTAssertNil(item.accountEmail)
+        XCTAssertNil(item.archiveAccounts.downloadAccountEmail)
+        XCTAssertEqual(item.archiveAccounts.metadataOwnerEmail, "fixture@example.invalid")
+        let request = TransferJob(app: item.app, sourceName: "Library", targetDeviceID: "target-a", targetName: "Fixture iPhone", libraryID: item.id, archiveAccounts: item.archiveAccounts)
+        try await queue.start(); await queue.enqueue(request)
+        let finished = try await waitFor(queue) { $0.jobs.first?.stage == .succeeded && !$0.running }
+        XCTAssertEqual(finished.jobs[0].archiveAccounts?.origin, .imported)
+        XCTAssertNil(finished.jobs[0].archiveAccounts?.downloadAccountEmail)
+        XCTAssertEqual(finished.history[0].archiveAccounts?.suggestedAccountEmail, "fixture@example.invalid")
+        let stats = await store.statistics()
+        XCTAssertEqual(stats.downloads, 0)
+    }
+
+    func testAccountRecoveryRejectsExpiredSessionAndClearsOldArchiveHint() async throws {
+        let root = try temporary(), app = descriptor("explicit-account"), device = CoordinatorDevice(), store = CoordinatorStore()
+        let (queue, _, _) = try coordinator(root: root, device: device, store: store)
+        try await queue.start(); await queue.setPaused(true)
+        var request = job(app)
+        request.archiveAccounts = ArchiveAccountContext(origin: .appStore, downloadAccountID: "old", downloadAccountEmail: "old@example.invalid")
+        await queue.enqueue(request)
+        await queue.assignAccount(request.id, account: AppleAccount(id: "expired", email: "expired@example.invalid", authenticated: false))
+        let unchanged = await queue.snapshot()
+        XCTAssertEqual(unchanged.jobs[0].accountID, request.accountID)
+        await queue.assignAccount(request.id, account: AppleAccount(id: "new", email: "new@example.invalid", authenticated: true))
+        let reassigned = await queue.snapshot()
+        XCTAssertEqual(reassigned.jobs[0].accountID, "new")
+        XCTAssertEqual(reassigned.jobs[0].accountSelectionReason, .explicit)
+        XCTAssertNil(reassigned.jobs[0].archiveAccounts)
+        await queue.cancel(request.id)
     }
 
     func testLateDownloadAndInstallProgressCannotRegressSuccess() async throws {

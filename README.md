@@ -6,6 +6,8 @@ A native macOS utility for moving eligible iPhone apps through a local IPA libra
 
 **Apple Silicon · macOS 15+ · 0.1.4 public preview.** Device discovery, fresh GUI Apple Account sign-in, a real download, library reuse, and local packaging have been verified. The new app's complete installation/readback/launch flow on a second iPhone remains pending. Availability and successful launch are not guaranteed for every app.
 
+The account explanations described below are the **0.1.5 (6) update**, approved locally for source delivery. Its DMG release has not yet been published. The public download remains v0.1.4; current verification is recorded in [QA](docs/QA.md) and [status](STATUS.md).
+
 ## Contents
 
 - [What it does](#what-it-does)
@@ -33,7 +35,7 @@ Local app data, banking sessions, passwords, and in-app sign-ins are outside the
 
 ## Install
 
-Get the DMG and accompanying SHA-256 file from the [public preview v0.1.4 release](https://github.com/Daveedick/iphone-app-transfer/releases/tag/v0.1.4). The repository and release downloads are publicly accessible; no repository invitation is needed. **Code → Download ZIP** supplies source code, not an installer. The matching local outputs are `dist/iPhone-App-Transfer-0.1.4-arm64.dmg` and `dist/iPhone App Transfer.app`.
+Get the DMG and accompanying SHA-256 file from the [public preview v0.1.4 release](https://github.com/Daveedick/iphone-app-transfer/releases/tag/v0.1.4). The repository and release downloads are publicly accessible; no repository invitation is needed. **Code → Download ZIP** supplies source code, not an installer. The next local review outputs are `dist/iPhone-App-Transfer-0.1.5-arm64.dmg` and `dist/iPhone App Transfer.app`; v0.1.5 is not yet published.
 
 Open the DMG, drag **iPhone App Transfer** into **Applications**, and launch that copy. The packaged app includes its helper and native libraries. End users do not need Terminal, Homebrew, Go, iMazing, or a separate ipatool installation.
 
@@ -54,18 +56,20 @@ An **offloaded** app is a placeholder without its installed executable. Metadata
 
 ## Accounts and licenses
 
-Open **Accounts**, enter the Apple Account email and password, and complete the verification-code prompt if Apple requests one. Enter credentials only in the app's secure form. Authentication preparation may show an indeterminate progress message.
+Open **App Store Accounts**, enter the Apple Account email and password, and complete the verification-code prompt if Apple requests one. Enter credentials only in the app's secure form. Authentication preparation may show an indeterminate progress message.
 
-Use the account that originally obtained the app. Apps installed by a bank or service center can belong to an inaccessible account. Another account does not inherit that license, and iPhone App Transfer does not purchase licenses automatically. Multiple accounts are implemented with separate sessions; live second-account behavior still requires verification.
+These accounts download IPA files from Apple's servers. Availability depends on the account's region, rights to the app, and whether Apple supplies the requested version. The tool is not an independent archive of every app and does not bypass regional availability or acquire licenses automatically. Apps installed by a bank or service center can belong to an inaccessible account.
 
-For downloads, an authenticated account matching the owner email from phone metadata is preferred, followed by the selected account or the sole available account. The owner is a hint, not a license check. **Choose Account** on a task overrides this choice explicitly. An authenticated badge means a saved session exists; Apple can still reject or expire it.
+Add other accounts when different apps were obtained through them: purchase histories and regions can differ. Each account has a separate session; live second-account behavior still requires verification.
+
+Before a download, the selection details show **Download through: email** and the reason. An authenticated account matching the owner hint from phone metadata is preferred; otherwise the authenticated **Default** account or the sole available account is used. The hint is not a license check. **Choose Account** on a task makes an explicit choice that stays with that task; changing the default does not change queued tasks. The queue, including the active collapsed summary, shows the account actually used. An authenticated badge means a saved session exists; Apple can still reject or expire it.
 
 There are **two separate sign-ins**:
 
-- **Apple Account:** permits downloading an entitled IPA and may be required by iOS when launching it. Signing in to iPhone App Transfer does not change the phone's primary Apple Account. Your usual account cannot substitute for an unavailable original account.
+- **Apple Account:** permits downloading an entitled IPA and may be required by iOS when launching it. The iPhone hint is based on the IPA actually used, which can differ from the source phone's account hint. Signing in to iPhone App Transfer does not change the phone's primary Apple Account or transfer an entitlement to a different account.
 - **Bank/app/service account:** signs you into the installed app afterward. Its session and local data are not copied by iPhone App Transfer.
 
-Use **Sign in again** for an expired session. A waiting task offers account selection. Closing Accounts dismisses the panel without canceling authentication or background work; use **Cancel sign-in** when cancellation is intended.
+Use **Sign in again** for an expired session. A waiting task offers account selection. Closing App Store Accounts dismisses the panel without canceling authentication or background work; use **Cancel sign-in** when cancellation is intended.
 
 ## Download and transfer
 
@@ -81,7 +85,7 @@ Start with an app on the phone and choose **Save to Library**. Follow its task u
 
 To install, connect the destination and drag a library entry to its column. iPhone App Transfer checks the target and archive, uploads it, requests installation, then reads back the expected app identity/version before reporting success. An app already installed on the target is skipped; automatic replacement/downgrade is not provided. The library copy remains reusable.
 
-After success, **open the app on the iPhone**. Verified installation does not guarantee launch: Apple Account activation, compatibility, or the service itself may still prevent use. The complete installation path remains a pending live check in this preview.
+After verified installation, **open the app on the iPhone**. The result identifies the account that may be required from the actual IPA's known information, or marks it unknown. If a source app mentions account A but the downloaded IPA belongs to B, the iPhone hint uses B. Conflicting account information remains explicit. Verified installation does not guarantee launch, a one-time-only login, or future updates: Apple Account activation, compatibility, or the service itself may still prevent use. The complete installation path remains a pending live check in this preview. Installing a saved IPA does not itself require signing in again on the Mac.
 
 ## Versions and availability
 
@@ -103,9 +107,13 @@ Stages distinguish waiting, download, validation, upload, installation, verifica
 
 After disconnection, reconnect the same phone and choose **Retry**. Interrupted operations after restart require review/retry rather than being declared successful. **Activity** records operations and recovery messages locally.
 
+Tasks and Activity preserve the known account details of the IPA actually used, so removing a saved authorization or library entry does not erase that historical explanation. The download account and any account inferred only from archive metadata remain distinguishable.
+
 ## Import and delete
 
 **Import IPA…** (`⌘O`) copies and validates an existing IPA into the library. The original stays in place. An imported entry is not automatically bound to a saved Apple Account (`accountID` is unknown). Import does not grant a license or guarantee installation/activation.
+
+Library details label a confirmed app download **Downloaded through: email**. Imported archives are labeled **Imported IPA** and may show **Account from IPA metadata: email**. Metadata does not prove who downloaded the file or holds its license. Older records without a confirmed download account retain this uncertainty rather than treating a metadata email as a proven downloader.
 
 Select library items and choose **Delete from Library…**, the context-menu action, or `⌘⌫`. Confirmed deletion moves the managed IPA to the **Mac's Trash**, preserving imported originals and phone apps. Unfinished tasks protect archives they need; cancel waiting tasks or finish work before deleting them.
 
@@ -187,6 +195,8 @@ Developers need an Apple Silicon Mac, macOS 15+, Swift/Clang CLT or Xcode, Go 1.
 ```
 
 [Build instructions](scripts/README.md) cover dependencies, the local CLT wrapper, configuration, and output verification. The portable runner shares Core test bodies; full Xcode also supports `./scripts/swiftpm.sh test`.
+
+Build defaults are **0.1.5 (6)** for the account-clarification update. The local build has been approved for source delivery. Build/package commands do not publish a GitHub prerelease; the public DMG remains v0.1.4 until a new release is published.
 
 Read-only diagnostics: `'dist/iPhone App Transfer.app/Contents/MacOS/AppTransfer' --diagnostics`. `test-device-bridge.sh --live-read-only` adds device reads without install/removal. Explicit `--demo` uses synthetic data and disables live actions; normal failure never becomes demo success.
 
