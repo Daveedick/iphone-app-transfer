@@ -42,7 +42,6 @@ pinned ipatool source. iPhone App Transfer does not redistribute Apple binaries 
 own assets. Network access and clean-user runtime preparation require separate
 acceptance checks.
 
-The 0.1.4 delivery is a private preview; its live second-device/second-account and clean-Mac checks remain pending. Before public binary distribution,
-preserve the supplied source/notice package and review the resolved Go module
+The 0.1.4 preview was initially private and is now publicly accessible by the owner's decision; its live second-device/second-account and clean-Mac checks remain pending. Preserve the supplied source/notice package and review the resolved Go module
 notice report and source-distribution obligations for the exact shipped build.
 No license for the project's original code is chosen by this notice document.

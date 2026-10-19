@@ -4,7 +4,7 @@
 
 A native macOS utility for moving eligible iPhone apps through a local IPA library. Connect your phones, see their apps side by side, download an available archive from Apple, and queue installation on another phone. Devices have equal roles, with no permanent source/target selection or two-phone limit.
 
-**Apple Silicon · macOS 15+ · 0.1.4 private preview.** Device discovery, fresh GUI Apple Account sign-in, a real download, library reuse, and local packaging have been verified. The new app's complete installation/readback/launch flow on a second iPhone remains pending. Availability and successful launch are not guaranteed for every app.
+**Apple Silicon · macOS 15+ · 0.1.4 public preview.** Device discovery, fresh GUI Apple Account sign-in, a real download, library reuse, and local packaging have been verified. The new app's complete installation/readback/launch flow on a second iPhone remains pending. Availability and successful launch are not guaranteed for every app.
 
 ## Contents
 
@@ -33,7 +33,7 @@ Local app data, banking sessions, passwords, and in-app sign-ins are outside the
 
 ## Install
 
-Get the DMG and accompanying SHA-256 file from the [private preview v0.1.4 release](https://github.com/Daveedick/iphone-app-transfer/releases/tag/v0.1.4). Access to the private repository is required. **Code → Download ZIP** supplies source code, not an installer. The matching local outputs are `dist/iPhone-App-Transfer-0.1.4-arm64.dmg` and `dist/iPhone App Transfer.app`.
+Get the DMG and accompanying SHA-256 file from the [public preview v0.1.4 release](https://github.com/Daveedick/iphone-app-transfer/releases/tag/v0.1.4). The repository and release downloads are publicly accessible; no repository invitation is needed. **Code → Download ZIP** supplies source code, not an installer. The matching local outputs are `dist/iPhone-App-Transfer-0.1.4-arm64.dmg` and `dist/iPhone App Transfer.app`.
 
 Open the DMG, drag **iPhone App Transfer** into **Applications**, and launch that copy. The packaged app includes its helper and native libraries. End users do not need Terminal, Homebrew, Go, iMazing, or a separate ipatool installation.
 
@@ -192,10 +192,10 @@ Read-only diagnostics: `'dist/iPhone App Transfer.app/Contents/MacOS/AppTransfer
 
 Architecture: SwiftUI/AppKit, direct [libimobiledevice C bridge](Sources/DeviceBridge/README.md), bundled [Go helper](Helpers/AppStoreBridge/README.md) using pinned ipatool 2.7.0 core. No WebView, shell-output IPC, or server.
 
-Contributors/agents should read [AGENTS.md](AGENTS.md), current [STATUS.md](STATUS.md), [product](PRODUCT.md), [design](DESIGN.md), [architecture](docs/ARCHITECTURE.md), [research](research/FINDINGS.md), and [implementation plan](IMPLEMENTATION_PLAN.md). [START_HERE.md](START_HERE.md) starts with the current continuation scope and preserves the original handoff as history; the MVP already exists. [GitHub CLI and publication](docs/GITHUB_SETUP.md) documents repository access and the private-to-public release path. Prototype HTML is only a design reference.
+Contributors/agents should read [AGENTS.md](AGENTS.md), current [STATUS.md](STATUS.md), [product](PRODUCT.md), [design](DESIGN.md), [architecture](docs/ARCHITECTURE.md), [research](research/FINDINGS.md), and [implementation plan](IMPLEMENTATION_PLAN.md). [START_HERE.md](START_HERE.md) starts with the current continuation scope and preserves the original handoff as history; the MVP already exists. [GitHub CLI and publication](docs/GITHUB_SETUP.md) documents repository access, delivery history, and public preview verification. Prototype HTML is only a design reference.
 
 ## Licenses
 
 Dependencies retain their licenses: see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md), the pinned manifest, and preserved ipatool MIT license/patch notes. Packaged builds include dependency notices/full license texts. Apple runtime images retain Apple's terms and are not redistributed inside the app.
 
-**The license for this project's original code has not yet been chosen.** Dependency licenses do not separately license that code. Repository/binary publication and completion of preview validation are distinct steps.
+**The license for this project's original code has not yet been chosen.** Public source visibility does not supply an open-source license; dependency licenses do not separately license that code. Repository/binary publication and completion of preview validation are distinct steps.

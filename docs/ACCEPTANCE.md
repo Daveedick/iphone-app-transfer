@@ -113,3 +113,10 @@ No phone mutation or new transfer was needed. Existing live-install/clean-Mac ga
 - [x] PRIVATE подтверждён GitHub API; prerelease/DMG/checksum опубликованы, скачанный SHA-256 совпал; свежий clone собрал release `.app` с тем же runtime source digest. Подробности STATUS/QA.
 
 Эта поставка остаётся preview: второй телефон/live install/readback/launch, второй live аккаунт и clean-Mac/Gatekeeper остаются открытыми.
+
+
+## Публичный доступ (19.10.2026)
+
+- [x] По прямому решению пользователя репозиторий открыт; анонимное чтение API/release и скачивание DMG/checksum проверены (HTTP 200, SHA-256 совпал).
+- [x] Исходный тег и бинарники 0.1.4 сохранены, статус preview/prerelease остаётся.
+- [ ] Второй телефон, второй live аккаунт, clean Mac и лицензия собственного кода по-прежнему требуют отдельной работы; это не блокировало явно разрешённое открытие репозитория.

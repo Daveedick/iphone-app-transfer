@@ -1,5 +1,15 @@
 # Проверка iPhone App Transfer preview 0.1.4 (5)
 
+## 19.10.2026 — публичный доступ
+
+Пользователь прямо разрешил открыть репозиторий сразу, сохранив ограничения preview и незавершённые live-проверки. Это решение заменяет прежнее ожидание отдельного разрешения на public.
+
+- [x] GitHub API подтверждает `isPrivate=false`, `visibility=PUBLIC` для [Daveedick/iphone-app-transfer](https://github.com/Daveedick/iphone-app-transfer).
+- [x] Без GitHub-токена получены HTTP 200 для repository API, [релиза v0.1.4](https://github.com/Daveedick/iphone-app-transfer/releases/tag/v0.1.4), DMG и checksum. SHA-256 скачанного образа совпал с исходной сборкой: `64878b19d5cd1146be43b4c0ceeed0c8c392f3d9c64065658b5fd76b4d1b3105`.
+- [x] Пометка private убрана из актуального описания репозитория и release notes. Статус prerelease сохранён; бинарники и тег не заменялись.
+
+Проверка: `.build/qa/public-visibility/anonymous.json` (локальный ignored отчёт). Этот шаг проверяет публичную доступность, не установку на втором iPhone или чистом Mac. Лицензия собственного кода пока не выбрана; публичная видимость сама её не устанавливает. Старые разделы ниже сохраняют историю первоначальной приватной поставки.
+
 ## 19.10.2026 — 0.1.4 (5): iPhone App Transfer и приватная поставка
 
 - [x] Видимое имя окна, меню, toolbar, локализаций, bundle metadata, `.app`, DMG и текущих документов — **iPhone App Transfer**. Внутренние Bundle ID, Keychain, preferences, library/cache и executable сохранены.
