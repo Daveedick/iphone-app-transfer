@@ -1,0 +1,34 @@
+.DS_Store
+.build/
+.swiftpm/
+DerivedData/
+build/
+dist/
+.cache/
+__pycache__/
+*.pyc
+private/
+reports/private/
+*.ipa
+*.partial
+*.dmg
+*.app/
+*.log
+*.xcuserstate
+xcuserdata/
+*.p12
+*.p8
+*.mobileprovision
+.env
+.env.*
+!.env.example
+
+# Local research/private state must not enter even a private source repository.
+/research/evidence/metadata-findings.json
+/HANDOFF_MANIFEST.json
+.auth/
+auth-state/
+device-dumps/
+
+# Keep synthetic test fixtures and prototype sources tracked.
+# Never place auth/session state or real device dumps in source directories.

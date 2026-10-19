@@ -1,0 +1,11 @@
+# Portable CLT verification
+
+Run `./scripts/test-core.sh` from the project root. It builds the current production `AppTransferCore` Swift sources and `ArchiveBridge` C source, then executes the same `CoreTests.swift` and `CoordinatorTests.swift` bodies against a small assertion adapter. It uses an isolated `.build/portable-tests` directory and does not acquire the SwiftPM build lock.
+
+This is **not XCTest**. It exists because Apple's Command Line Tools installation on the development machine does not include the XCTest framework. On a Mac with a usable XCTest installation, ordinary `swift test` continues to import real XCTest; the portable adapter is selected only by `APPTRANSFER_PORTABLE_TESTS` during the custom script build. The adapter and runner are not linked into iPhone App Transfer.
+
+The script automatically registers every supported zero-argument `test...` method, refuses unknown signatures/empty discovery, records assertion and thrown-error failures, and always awaits teardown blocks. A mandatory negative self-check verifies both a deliberately failed assertion and an async teardown exception produce exit status 1. Any test/compile failure propagates through the shell's `pipefail`; no failing result is converted to a pass. Successful/failed results are printed and retained at `.build/portable-tests/results.log`.
+
+Developer prerequisites: macOS 15+/Apple Silicon, CLT/Swift, Python 3 for synthetic ZIP fixtures, and libarchive development headers (default `/opt/homebrew/opt/libarchive/include`, override `APPTRANSFER_ARCHIVE_INCLUDE`). The test executable links the system libarchive runtime. Fixtures contain public synthetic metadata and dummy SINF bytes; tests use actor mock device/store services, not real accounts, App Store downloads, USB installation or launch activation.
+
+Verified on this CLT host: 18 shared tests, 86 assertions, zero failures. Scope includes archive identity/CRC/path checks, account-separated library storage, persistence including paused relaunch and legacy-state decoding, sequential transfers and cache reuse, download-only isolation, account waiting states, immutable destinations/recovery/readback, safe deletion references, canceled staging cleanup and stale progress. Native UI, real Apple authentication, actual installation and clean-user release checks remain separate.

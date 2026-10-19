@@ -1,0 +1,134 @@
+{
+  "schema_version": 1,
+  "target": {
+    "architecture": "arm64",
+    "minimum_macos": "15.0"
+  },
+  "native_libraries": [
+    {
+      "name": "libimobiledevice",
+      "version": "1.4.0_1",
+      "license": "LGPL-2.1-or-later",
+      "source_url": "https://github.com/libimobiledevice/libimobiledevice/releases/download/1.4.0/libimobiledevice-1.4.0.tar.bz2",
+      "source_sha256": "23cc0077e221c7d991bd0eb02150a0d49199bcca1ddf059edccee9ffd914939d",
+      "binaries": [
+        {
+          "name": "libimobiledevice-1.0.6.dylib",
+          "developer_path": "/opt/homebrew/opt/libimobiledevice/lib/libimobiledevice-1.0.6.dylib",
+          "sha256": "9994df293b0cd956a0aae0cbfae1477a286964de8fa3a58f881588a73be1f68d",
+          "minimum_macos": "15.0",
+          "architecture": "arm64"
+        }
+      ],
+      "license_files": [
+        "/opt/homebrew/Cellar/libimobiledevice/1.4.0_1/COPYING",
+        "/opt/homebrew/Cellar/libimobiledevice/1.4.0_1/COPYING.LESSER"
+      ]
+    },
+    {
+      "name": "libplist",
+      "version": "2.8.0",
+      "license": "LGPL-2.1-or-later",
+      "source_url": "https://github.com/libimobiledevice/libplist/releases/download/2.8.0/libplist-2.8.0.tar.bz2",
+      "source_sha256": "b1f59f7634c58b2481325a23ff4e3bf51574a42d868cbe466d2b39b04550752a",
+      "binaries": [
+        {
+          "name": "libplist-2.0.12.dylib",
+          "developer_path": "/opt/homebrew/opt/libplist/lib/libplist-2.0.12.dylib",
+          "sha256": "7f1c20032fe6b85abbeff57c2e4a07199a8d4578786d0fa8e3e1868b169bdbcd",
+          "minimum_macos": "15.0",
+          "architecture": "arm64"
+        }
+      ],
+      "license_files": [
+        "/opt/homebrew/Cellar/libplist/2.8.0/COPYING",
+        "/opt/homebrew/Cellar/libplist/2.8.0/COPYING.LESSER"
+      ]
+    },
+    {
+      "name": "libusbmuxd",
+      "version": "2.1.1_1",
+      "license": "LGPL-2.1-or-later",
+      "source_url": "https://github.com/libimobiledevice/libusbmuxd/releases/download/2.1.1/libusbmuxd-2.1.1.tar.bz2",
+      "source_sha256": "5546f1aba1c3d1812c2b47d976312d00547d1044b84b6a461323c621f396efce",
+      "binaries": [
+        {
+          "name": "libusbmuxd-2.0.7.dylib",
+          "developer_path": "/opt/homebrew/opt/libusbmuxd/lib/libusbmuxd-2.0.7.dylib",
+          "sha256": "3b22692297395f9ee3638b1fea13df326fcf4c6f185940ded45f708fff5939c4",
+          "minimum_macos": "15.0",
+          "architecture": "arm64"
+        }
+      ],
+      "license_files": [
+        "/opt/homebrew/Cellar/libusbmuxd/2.1.1_1/COPYING"
+      ]
+    },
+    {
+      "name": "libimobiledevice-glue",
+      "version": "1.3.3",
+      "license": "LGPL-2.1-or-later",
+      "source_url": "https://github.com/libimobiledevice/libimobiledevice-glue/releases/download/1.3.3/libimobiledevice-glue-1.3.3.tar.bz2",
+      "source_sha256": "920ce01382a32695f49b23292b4979a03f0afd16c58e8755d8b7f41804acc1a9",
+      "binaries": [
+        {
+          "name": "libimobiledevice-glue-1.0.0.dylib",
+          "developer_path": "/opt/homebrew/opt/libimobiledevice-glue/lib/libimobiledevice-glue-1.0.0.dylib",
+          "sha256": "db06c35230c9c4c62a8404ac3c8516de6529672dd840b0379c3ef8fe923e7f06",
+          "minimum_macos": "15.0",
+          "architecture": "arm64"
+        }
+      ],
+      "license_files": [
+        "/opt/homebrew/Cellar/libimobiledevice-glue/1.3.3/COPYING"
+      ]
+    },
+    {
+      "name": "openssl@3",
+      "version": "3.6.5",
+      "license": "Apache-2.0",
+      "source_url": "https://github.com/openssl/openssl/releases/download/openssl-3.6.5/openssl-3.6.5.tar.gz",
+      "source_sha256": "a2157c2830efdec3788939b00c9b0638306d3f0bbb76dc4832ee503bb397df98",
+      "binaries": [
+        {
+          "name": "libssl.3.dylib",
+          "developer_path": "/opt/homebrew/opt/openssl@3/lib/libssl.3.dylib",
+          "sha256": "cded6b86d2235f6e6495710583aeaaa164673a02726bbb0bcbb66cfd60465394",
+          "minimum_macos": "15.0",
+          "architecture": "arm64"
+        },
+        {
+          "name": "libcrypto.3.dylib",
+          "developer_path": "/opt/homebrew/opt/openssl@3/lib/libcrypto.3.dylib",
+          "sha256": "0dfbc51bc6cb8f24a75a3a719567839f14dd3d95dd25efaf6eccad05ab56a55a",
+          "minimum_macos": "15.0",
+          "architecture": "arm64"
+        }
+      ],
+      "license_files": [
+        "/opt/homebrew/Cellar/openssl@3/3.6.5/LICENSE.txt"
+      ]
+    }
+  ],
+  "appstore_core": {
+    "repository": "https://github.com/majd/ipatool",
+    "tag": "v2.7.0",
+    "commit": "4484b55d366e177ae6c89758c61588712c572fad",
+    "module_checksum": "h1:vUnVsSfH4TQNCgxouApwcQgiliwtNCwv7/OK6QfFaSE=",
+    "license": "MIT",
+    "patch": "Dedicated iPhone App Transfer SAP and Unicorn cache namespace (legacy App Transfer directory retained); see Helpers/AppStoreBridge/UPSTREAM.md"
+  },
+  "system_libraries": [
+    "libarchive.2.dylib",
+    "libSystem.B.dylib",
+    "Swift runtime",
+    "Apple system frameworks"
+  ],
+  "development_only": {
+    "libarchive_headers": "3.8.5_1",
+    "swift_verified": "6.0.3",
+    "go_minimum": "1.26.0",
+    "native_binary_source": "Existing pinned Homebrew arm64_sequoia bottles; SHA fingerprints checked before build"
+  },
+  "scope_note": "No IPA, private phone inventory, account session, Apple SAP image, or downloaded Unicorn runtime is embedded by this manifest."
+}

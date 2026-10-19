@@ -1,0 +1,33 @@
+--- a/internal/sap/assets/assets.go
++++ b/internal/sap/assets/assets.go
+@@ -202,7 +202,7 @@
+ 		return "", fmt.Errorf("find user cache directory: %w", err)
+ 	}
+ 
+-	return filepath.Join(root, "ipatool", "sap", "apple-assets-v2"), nil
++	return filepath.Join(root, "App Transfer", "sap", "apple-assets-v2"), nil
+ }
+ 
+ func readCache(directory string) (Bundle, error) {
+--- a/internal/sap/assets/storeagent.go
++++ b/internal/sap/assets/storeagent.go
+@@ -56,7 +56,7 @@
+ 		return "", fmt.Errorf("find user cache directory: %w", err)
+ 	}
+ 
+-	return filepath.Join(root, "ipatool", "sap", storeAgentCacheDirectory), nil
++	return filepath.Join(root, "App Transfer", "sap", storeAgentCacheDirectory), nil
+ }
+ 
+ func readStoreAgent(path string) ([]byte, error) {
+--- a/internal/sap/unicorn/cache_runtime.go
++++ b/internal/sap/unicorn/cache_runtime.go
+@@ -35,7 +35,7 @@
+ 		return runtimePaths{}, fmt.Errorf("locate user cache: %w", err)
+ 	}
+ 
+-	root := filepath.Join(cache, "ipatool", "unicorn", unicornVersion)
++	root := filepath.Join(cache, "App Transfer", "unicorn", unicornVersion)
+ 	paths := runtimePaths{dependencies: make([]string, 0, len(selected.dependencies))}
+ 
+ 	for _, dependency := range selected.dependencies {

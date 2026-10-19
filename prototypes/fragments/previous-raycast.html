@@ -1,0 +1,254 @@
+<div id="app-transfer-preview" aria-label="iPhone App Transfer — макет для трёх телефонов">
+  <div class="at-window">
+    <header class="at-titlebar">
+      <div class="at-identity"><div class="at-traffic" aria-hidden="true"><b></b><b></b><b></b></div><span class="at-wordmark">iPhone App Transfer</span></div>
+      <nav class="at-tabs" aria-label="Разделы"><button type="button" data-tab="devices" class="is-active">Устройства</button><button type="button" data-tab="history">Журнал</button></nav>
+      <button type="button" class="at-account-button" data-action="accounts"><i data-lucide="circle-user-round" aria-hidden="true"></i><span>Аккаунты</span><span class="at-count">2</span></button>
+    </header>
+    <div class="at-toolbar">
+      <button type="button" class="at-library-toggle" data-action="library" aria-label="Скрыть библиотеку" aria-expanded="true" data-tooltip="Показать или скрыть библиотеку · ⌘S"><i data-lucide="panel-left" aria-hidden="true"></i><span>Библиотека</span><kbd>⌘S</kbd></button>
+      <div class="at-device-nav" aria-label="Подключённые устройства"><span class="at-connected"><b></b>3 устройства</span><button type="button" data-jump="p14">14 Pro Max</button><button type="button" data-jump="p16">16 Pro Max</button><button type="button" data-jump="p17">17 Pro Max</button></div>
+    </div>
+    <div class="at-workspace">
+      <aside class="at-library" data-drop="library" aria-label="Библиотека скачанных приложений">
+        <div class="at-library-heading"><div><h2>Библиотека</h2><span class="at-library-total"></span></div><button type="button" class="at-icon-button" aria-label="О библиотеке" data-tooltip="Здесь хранятся скачанные приложения для установки на другие устройства. Может потребоваться Apple Account, под которым они скачаны."><i data-lucide="info" aria-hidden="true"></i></button></div>
+        <label class="at-search"><i data-lucide="search" aria-hidden="true"></i><input aria-label="Поиск в библиотеке" placeholder="Найти приложение" data-search="library"></label>
+        <div class="at-section-label">Скачанные приложения</div>
+        <div class="at-library-list"></div>
+        <div class="at-library-drop"><i data-lucide="download" aria-hidden="true"></i><span>Перетащите сюда,<br>чтобы сохранить IPA</span><small>Без установки на телефон</small></div>
+        <div class="at-library-foot"><i data-lucide="hard-drive" aria-hidden="true"></i><span>Хранится на этом Mac</span></div>
+      </aside>
+      <main class="at-main">
+        <div class="at-devices" aria-label="Приложения подключённых телефонов"></div>
+        <section class="at-history" aria-label="Журнал действий" hidden></section>
+      </main>
+    </div>
+    <div class="at-selection" aria-live="polite"></div>
+    <section class="at-queue" aria-label="Очередь переноса">
+      <div class="at-queue-heading"><button type="button" class="at-queue-toggle" data-action="queue" aria-expanded="true"><i data-lucide="list-ordered" aria-hidden="true"></i><strong>Очередь</strong><span class="at-queue-count"></span><i data-lucide="chevron-down" aria-hidden="true"></i></button><div class="at-queue-controls"><span class="at-queue-summary"></span><button type="button" class="at-small-button" data-action="play"></button></div></div>
+      <div class="at-queue-list"></div>
+    </section>
+    <footer class="at-footer"><span class="at-foot-status"><i data-lucide="shield-check" aria-hidden="true"></i>Подключение по USB</span><div><span>Макет · демоданные</span><button type="button" data-action="reset">Повторить пример</button></div></footer>
+    <div class="at-account-popover" hidden></div>
+    <div class="at-toast" role="status" hidden></div>
+    <div class="at-drag-ghost" hidden></div>
+  </div>
+</div>
+<style>
+#app-transfer-preview{--at-surface:light-dark(#fcfcfd,#202124);--at-chrome:light-dark(#f3f3f5,#27282c);--at-sidebar:light-dark(#f5f5f7,#242529);--at-row:light-dark(#ededf1,#303136);--at-text:light-dark(#23242b,#f0f0f2);--at-secondary:light-dark(#666873,#b0b0ba);--at-line:light-dark(#dddde3,#3a3b41);--at-accent:light-dark(#4959ce,#b3bbff);--at-selected:light-dark(#e9ecfc,#32384f);--at-green:light-dark(#277545,#8fd4aa);--at-green-bg:light-dark(#e7f3ea,#26382e);--at-button:light-dark(#30323d,#e5e6ec);--at-button-text:light-dark(#ffffff,#252631);--at-shadow:light-dark(#00000022,#00000066);--at-row-height:57px;font:13px/1.4 -apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",sans-serif;color:var(--at-text);width:100%;color-scheme:light dark}
+#app-transfer-preview *{box-sizing:border-box}
+#app-transfer-preview button,#app-transfer-preview input{font:inherit;color:inherit}
+#app-transfer-preview button{border:0;background:none;padding:0;touch-action:manipulation}
+#app-transfer-preview button:not(:disabled){cursor:default}
+#app-transfer-preview button:disabled{opacity:.45}
+#app-transfer-preview button:focus-visible,#app-transfer-preview input:focus-visible{outline:2px solid var(--at-accent);outline-offset:2px}
+#app-transfer-preview [hidden]{display:none!important}
+#app-transfer-preview svg{width:16px;height:16px;flex-shrink:0;stroke-width:1.65}
+#app-transfer-preview h2,#app-transfer-preview h3,#app-transfer-preview p{margin:0}
+#app-transfer-preview ::selection{background:var(--at-selected);color:var(--at-text)}
+#app-transfer-preview input{caret-color:var(--at-accent)}
+#app-transfer-preview .at-window{position:relative;background:var(--at-surface);border:1px solid var(--at-line);border-radius:13px;overflow:clip}
+#app-transfer-preview .at-titlebar{min-height:58px;background:var(--at-chrome);display:flex;align-items:center;justify-content:space-between;gap:16px;padding:0 98px 0 18px;border-bottom:1px solid var(--at-line)}
+#app-transfer-preview .at-identity{display:flex;gap:20px;align-items:center;white-space:nowrap}
+#app-transfer-preview .at-wordmark{font-weight:600;letter-spacing:-.3px;font-size:14px}
+#app-transfer-preview .at-traffic{display:flex;gap:7px}
+#app-transfer-preview .at-traffic b{width:11px;height:11px;border-radius:50%;background:light-dark(#ed6b64,#ff635a)}
+#app-transfer-preview .at-traffic b:nth-child(2){background:light-dark(#eab94d,#f5bd4f)}
+#app-transfer-preview .at-traffic b:nth-child(3){background:light-dark(#59b767,#5bc869)}
+#app-transfer-preview .at-tabs{display:flex;padding:3px;gap:2px;background:var(--at-row);border-radius:7px}
+#app-transfer-preview .at-tabs button{padding:5px 14px;font-size:12px;border-radius:5px;color:var(--at-secondary)}
+#app-transfer-preview .at-tabs button.is-active{background:var(--at-surface);color:var(--at-text);box-shadow:0 1px 3px var(--at-shadow)}
+#app-transfer-preview .at-account-button{display:flex;gap:7px;align-items:center;font-size:12px}
+#app-transfer-preview .at-account-button:hover{color:var(--at-accent)}
+#app-transfer-preview .at-count{background:var(--at-row);border:1px solid var(--at-line);padding:0 5px;border-radius:4px;font-size:11px;color:var(--at-secondary)}
+#app-transfer-preview .at-toolbar{display:flex;align-items:center;gap:15px;padding:10px 14px;border-bottom:1px solid var(--at-line);min-height:45px}
+#app-transfer-preview .at-library-toggle{display:flex;align-items:center;gap:8px;font-size:12px;padding:5px 7px;border-radius:5px;white-space:nowrap}
+#app-transfer-preview .at-library-toggle:hover{background:var(--at-row)}
+#app-transfer-preview kbd{font:11px -apple-system,BlinkMacSystemFont,sans-serif;color:var(--at-secondary);margin-left:5px}
+#app-transfer-preview .at-device-nav{display:flex;align-items:center;gap:6px;margin-left:auto;flex-wrap:wrap;font-size:11px}
+#app-transfer-preview .at-device-nav button{padding:4px 7px;border-radius:4px;color:var(--at-secondary)}
+#app-transfer-preview .at-device-nav button:hover{background:var(--at-row);color:var(--at-text)}
+#app-transfer-preview .at-connected{display:flex;align-items:center;gap:6px;margin-right:7px;color:var(--at-secondary);white-space:nowrap}
+#app-transfer-preview .at-connected b,#app-transfer-preview .at-usb b{height:5px;width:5px;border-radius:50%;background:var(--at-green);display:inline-block}
+#app-transfer-preview .at-workspace{display:flex;min-height:469px}
+#app-transfer-preview .at-library{width:210px;flex-shrink:0;display:flex;flex-direction:column;background:var(--at-sidebar);padding:19px 10px 0;border-right:1px solid var(--at-line);position:relative}
+#app-transfer-preview .at-library-heading{display:flex;justify-content:space-between;align-items:start;padding:0 7px 15px;gap:10px}
+#app-transfer-preview .at-library-heading h2{font-size:14px;letter-spacing:-.2px;font-weight:600}
+#app-transfer-preview .at-library-total{font-size:11px;color:var(--at-secondary);display:block;margin-top:4px}
+#app-transfer-preview .at-icon-button{width:24px;height:24px;display:grid;place-items:center;border-radius:5px;color:var(--at-secondary)}
+#app-transfer-preview .at-icon-button:hover{background:var(--at-row);color:var(--at-text)}
+#app-transfer-preview .at-search{height:31px;display:flex;align-items:center;gap:7px;padding:0 8px;border:1px solid var(--at-line);border-radius:6px;color:var(--at-secondary);background:var(--at-surface)}
+#app-transfer-preview .at-search svg{width:13px;height:13px}
+#app-transfer-preview .at-search input{width:100%;min-width:0;background:none;border:none;outline:none;font-size:11px;padding:5px 0}
+#app-transfer-preview .at-search input::placeholder{color:var(--at-secondary);opacity:1}
+#app-transfer-preview .at-section-label{color:var(--at-secondary);font-size:11px;padding:19px 7px 6px}
+#app-transfer-preview .at-library-list{min-height:118px}
+#app-transfer-preview .at-library-drop{padding:22px 6px 18px;display:flex;align-items:center;flex-direction:column;gap:8px;text-align:center;color:var(--at-secondary);font-size:12px;line-height:1.5;margin:12px 6px 0;border:1px dashed var(--at-line);border-radius:7px}
+#app-transfer-preview .at-library-drop svg{width:20px;height:20px}
+#app-transfer-preview .at-library-drop small{font-size:10px}
+#app-transfer-preview .at-library-foot{margin-top:auto;padding:18px 5px 13px;display:flex;align-items:center;gap:7px;color:var(--at-secondary);font-size:10px}
+#app-transfer-preview .at-library-foot svg{width:13px;height:13px}
+#app-transfer-preview .at-main{min-width:0;flex:1}
+#app-transfer-preview .at-devices{display:flex;overflow-x:auto;scrollbar-width:thin;scrollbar-color:var(--at-line) var(--at-surface);min-height:100%;scroll-behavior:smooth}
+#app-transfer-preview .at-device{min-width:239px;flex:1;position:relative;padding:19px 11px 10px;border-right:1px solid var(--at-line)}
+#app-transfer-preview .at-device:last-child{border:0}
+#app-transfer-preview .at-device-header{display:flex;gap:10px;align-items:center;margin:0 3px 15px}
+#app-transfer-preview .at-phone-icon{width:24px;height:39px;border:1.5px solid var(--at-secondary);border-radius:6px;position:relative;flex-shrink:0;display:grid;place-items:center;background:var(--at-chrome)}
+#app-transfer-preview .at-phone-icon:before{content:"";position:absolute;top:4px;width:9px;height:3px;border-radius:3px;background:var(--at-secondary)}
+#app-transfer-preview .at-phone-icon:after{content:"";position:absolute;bottom:3px;width:9px;height:1px;background:var(--at-secondary)}
+#app-transfer-preview .at-phone-icon span{font-size:9px;color:var(--at-secondary);padding-top:3px;font-weight:500}
+#app-transfer-preview .at-device h2{font-size:13px;font-weight:600;letter-spacing:-.25px;white-space:nowrap}
+#app-transfer-preview .at-device-owner{font-size:11px;color:var(--at-secondary);display:block;margin-top:4px}
+#app-transfer-preview .at-usb{margin-left:auto;display:flex;align-items:center;gap:3px;font-size:9px;color:var(--at-secondary)}
+#app-transfer-preview .at-device-summary{display:flex;justify-content:space-between;align-items:center;margin:12px 3px 5px;font-size:10px;color:var(--at-secondary)}
+#app-transfer-preview .at-app-row{display:flex;align-items:center;gap:10px;width:100%;min-height:var(--at-row-height);text-align:left;border-radius:6px!important;padding:8px 7px!important;position:relative;user-select:none}
+#app-transfer-preview .at-app-row[draggable="true"]{cursor:grab}
+#app-transfer-preview .at-app-row:hover{background:var(--at-row)}
+#app-transfer-preview .at-app-row.is-selected{background:var(--at-selected)}
+#app-transfer-preview .at-app-row.is-dragged{opacity:.45}
+#app-transfer-preview .at-app-row.is-new{background:var(--at-green-bg)}
+#app-transfer-preview .at-app-copy{min-width:0;flex:1}
+#app-transfer-preview .at-app-name{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:12px;font-weight:500}
+#app-transfer-preview .at-app-meta{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--at-secondary);font-size:10px;margin-top:3px}
+#app-transfer-preview .at-app-row>.at-status-icon{width:13px;height:13px;color:var(--at-green)}
+#app-transfer-preview .at-icon{width:31px;height:31px;border-radius:7px;flex-shrink:0;display:grid;place-items:center;font-size:19px;font-weight:650;line-height:1;position:relative;overflow:hidden}
+#app-transfer-preview .at-icon-avito{background:#fafafa;color:#242424;border:1px solid #e1e1e1;grid-template-columns:9px 9px;grid-template-rows:9px 9px;gap:2px;justify-content:center;align-content:center}
+#app-transfer-preview .at-icon-avito b{width:9px;height:9px;border-radius:50%;background:#91d44c}
+#app-transfer-preview .at-icon-avito b:nth-child(2){background:#ae79ff}
+#app-transfer-preview .at-icon-avito b:nth-child(3){background:#ff5c76}
+#app-transfer-preview .at-icon-avito b:nth-child(4){background:#50c8ec}
+#app-transfer-preview .at-icon-tbank{background:#ffdf35;color:#151515}
+#app-transfer-preview .at-icon-mail{background:#0969ec;color:#ffc750;font-size:25px;font-weight:700}
+#app-transfer-preview .at-icon-telegram{background:#36a8df;color:#ffffff}
+#app-transfer-preview .at-icon-telegram svg{width:20px;height:20px;stroke-width:1.8}
+#app-transfer-preview .at-icon-yplaces{background:#242526;color:#ffc9ae;font-weight:500;font-size:21px}
+#app-transfer-preview .at-icon-craftersy{background:#d6e8cf;color:#304d32;font-family:Georgia,serif;font-size:25px}
+#app-transfer-preview .at-icon-online{background:#2f9e70;color:#ffffff;font-size:22px}
+#app-transfer-preview .at-icon-au{background:#f6f5f1;color:#292a2f;font-size:16px;border:1px solid #dfdeda}
+#app-transfer-preview .at-icon-advance{background:#1e2025;color:#f29f86;font-size:24px;font-weight:500}
+#app-transfer-preview .at-icon-whatsapp{background:#33b76b;color:#ffffff}
+#app-transfer-preview .at-icon-youtube{background:#f4f4f4;color:#e83232;border:1px solid #e1e1e1}
+#app-transfer-preview .at-icon-spotify{background:#202322;color:#53d981}
+#app-transfer-preview .at-device-foot{padding:14px 5px 3px;font-size:10px;color:var(--at-secondary);display:flex;align-items:center;gap:6px}
+#app-transfer-preview .at-device-foot svg{width:12px;height:12px}
+#app-transfer-preview .at-drop-overlay{position:absolute;inset:4px;border:1.5px solid var(--at-accent);background:var(--at-selected);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;z-index:3;pointer-events:none;text-align:center;color:var(--at-text);padding:20px}
+#app-transfer-preview .at-drop-overlay svg{width:27px;height:27px;color:var(--at-accent)}
+#app-transfer-preview .at-drop-overlay strong{font-size:14px;font-weight:600}
+#app-transfer-preview .at-drop-overlay small{font-size:11px;color:var(--at-secondary)}
+#app-transfer-preview .at-library.is-drop-hover{background:var(--at-selected);box-shadow:inset 0 0 0 1px var(--at-accent)}
+#app-transfer-preview .at-selection{min-height:56px;display:flex;align-items:center;padding:10px 16px;border-top:1px solid var(--at-line);gap:10px;background:var(--at-chrome)}
+#app-transfer-preview .at-selection-copy{display:flex;flex-direction:column;gap:2px;margin-right:auto}
+#app-transfer-preview .at-selection-copy strong{font-size:12px;font-weight:500}
+#app-transfer-preview .at-selection-copy span{font-size:10px;color:var(--at-secondary)}
+#app-transfer-preview .at-action{display:flex;align-items:center;justify-content:center;gap:6px;border:1px solid var(--at-line);background:var(--at-surface);padding:6px 9px;border-radius:5px;font-size:11px;white-space:nowrap}
+#app-transfer-preview .at-action:hover{background:var(--at-row)}
+#app-transfer-preview .at-action.primary{background:var(--at-button);color:var(--at-button-text);border-color:var(--at-button)}
+#app-transfer-preview .at-action svg{width:13px;height:13px}
+#app-transfer-preview .at-queue{border-top:1px solid var(--at-line);background:var(--at-surface)}
+#app-transfer-preview .at-queue-heading{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 16px}
+#app-transfer-preview .at-queue-toggle{display:flex;align-items:center;gap:8px;font-size:12px}
+#app-transfer-preview .at-queue-toggle strong{font-weight:500}
+#app-transfer-preview .at-queue-toggle>svg:last-child{width:12px;height:12px;color:var(--at-secondary)}
+#app-transfer-preview .at-queue-count{font-size:11px;color:var(--at-secondary)}
+#app-transfer-preview .at-queue-controls{display:flex;align-items:center;gap:13px}
+#app-transfer-preview .at-queue-summary{font-size:10px;color:var(--at-secondary)}
+#app-transfer-preview .at-small-button{display:flex;align-items:center;gap:5px;padding:4px 8px;border:1px solid var(--at-line);border-radius:5px;font-size:11px;background:var(--at-chrome)}
+#app-transfer-preview .at-small-button svg{width:12px;height:12px}
+#app-transfer-preview .at-queue-list{padding:0 16px 8px}
+#app-transfer-preview .at-task{display:grid;grid-template-columns:minmax(150px,1fr) minmax(180px,1.7fr) minmax(135px,1fr) 22px;align-items:center;gap:12px;min-height:40px;font-size:11px;border-top:1px solid var(--at-line);padding:6px 0}
+#app-transfer-preview .at-task:first-child{border:0}
+#app-transfer-preview .at-task-app{display:flex;align-items:center;gap:8px;min-width:0}
+#app-transfer-preview .at-task .at-icon{width:24px;height:24px;border-radius:5px;font-size:16px}
+#app-transfer-preview .at-task-route{display:flex;align-items:center;gap:6px;font-size:10px;color:var(--at-secondary);flex-wrap:wrap}
+#app-transfer-preview .at-task-route svg{width:12px;height:12px}
+#app-transfer-preview .at-task-state{min-width:0}
+#app-transfer-preview .at-stage-title{display:flex;justify-content:space-between;gap:6px;font-size:10px;color:var(--at-secondary)}
+#app-transfer-preview .at-progress{height:3px;background:var(--at-row);border-radius:2px;margin-top:5px;overflow:hidden}
+#app-transfer-preview .at-progress span{display:block;height:100%;background:var(--at-accent);border-radius:2px;transition:width .2s linear}
+#app-transfer-preview .at-task.active .at-task-app strong{font-weight:500}
+#app-transfer-preview .at-task.waiting{color:var(--at-secondary)}
+#app-transfer-preview .at-task.done .at-stage-title{color:var(--at-green)}
+#app-transfer-preview .at-footer{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 15px;background:var(--at-chrome);border-top:1px solid var(--at-line);font-size:10px;color:var(--at-secondary)}
+#app-transfer-preview .at-footer>div,#app-transfer-preview .at-foot-status{display:flex;align-items:center;gap:9px}
+#app-transfer-preview .at-foot-status svg{width:12px;height:12px}
+#app-transfer-preview .at-footer button{text-decoration:underline;text-underline-offset:3px}
+#app-transfer-preview .at-history{padding:22px;min-height:469px}
+#app-transfer-preview .at-history h2{font-size:17px;font-weight:600;margin-bottom:4px}
+#app-transfer-preview .at-history>p{font-size:12px;color:var(--at-secondary);margin-bottom:22px}
+#app-transfer-preview .at-history-row{padding:14px 0;display:flex;align-items:start;gap:12px;border-bottom:1px solid var(--at-line)}
+#app-transfer-preview .at-history-row>div{flex:1}
+#app-transfer-preview .at-history-row strong{font-size:12px;font-weight:500}
+#app-transfer-preview .at-history-row p{font-size:11px;color:var(--at-secondary);margin-top:4px;overflow-wrap:anywhere}
+#app-transfer-preview .at-history-row>span{font-size:10px;color:var(--at-secondary)}
+#app-transfer-preview .at-account-popover{position:absolute;z-index:10;right:18px;top:52px;width:296px;max-width:calc(100% - 36px);padding:17px;background:var(--at-surface);box-shadow:0 10px 35px var(--at-shadow);border-radius:9px}
+#app-transfer-preview .at-popover-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;font-size:13px;font-weight:600}
+#app-transfer-preview .at-account-row{padding:12px 0;display:flex;align-items:center;gap:10px;border-top:1px solid var(--at-line)}
+#app-transfer-preview .at-account-row svg{color:var(--at-secondary)}
+#app-transfer-preview .at-account-row strong{font-size:12px;font-weight:500}
+#app-transfer-preview .at-account-row small{display:block;font-size:11px;color:var(--at-secondary);margin-top:4px}
+#app-transfer-preview .at-toast{position:absolute;z-index:11;bottom:40px;left:50%;transform:translateX(-50%);max-width:calc(100% - 40px);width:max-content;padding:10px 14px;border-radius:7px;background:var(--at-button);color:var(--at-button-text);font-size:12px;box-shadow:0 6px 24px var(--at-shadow)}
+#app-transfer-preview .at-drag-ghost{position:absolute;left:-1000px;top:-1000px;background:var(--at-chrome);padding:10px 14px;border-radius:6px;display:flex;align-items:center;gap:10px}
+#app-transfer-preview .at-empty{padding:24px 8px;font-size:12px;color:var(--at-secondary);text-align:center}
+@media(max-width:850px){#app-transfer-preview .at-titlebar{padding-right:92px;gap:9px}#app-transfer-preview .at-identity{gap:12px}#app-transfer-preview .at-account-button>span{display:none}#app-transfer-preview .at-library{width:194px}#app-transfer-preview .at-device-nav button{display:none}#app-transfer-preview .at-task{grid-template-columns:minmax(100px,1fr) minmax(140px,1.5fr) minmax(130px,1fr) 22px;gap:7px}}
+@media(max-width:600px){#app-transfer-preview .at-titlebar{flex-wrap:wrap;padding:12px 92px 11px 12px;justify-content:start;gap:12px}#app-transfer-preview .at-traffic{display:none}#app-transfer-preview .at-tabs{margin-left:auto}#app-transfer-preview .at-tabs button{padding:4px 8px}#app-transfer-preview .at-account-button{margin-left:auto}#app-transfer-preview .at-toolbar{padding:7px 9px;gap:5px}#app-transfer-preview .at-connected{font-size:10px}#app-transfer-preview .at-workspace{display:block}#app-transfer-preview .at-library{width:100%;padding:14px 10px;border-right:0;border-bottom:1px solid var(--at-line)}#app-transfer-preview .at-library-list{display:flex;flex-wrap:wrap;min-height:0}#app-transfer-preview .at-library-list .at-app-row{width:50%;min-width:130px}#app-transfer-preview .at-library-drop{padding:9px;margin:9px 0 0;flex-direction:row;justify-content:center;gap:10px;font-size:11px}#app-transfer-preview .at-library-drop br{display:none}#app-transfer-preview .at-library-drop small{display:none}#app-transfer-preview .at-library-foot{display:none}#app-transfer-preview .at-section-label{padding-top:10px}#app-transfer-preview .at-library-heading{padding-bottom:10px}#app-transfer-preview .at-selection{flex-wrap:wrap;padding:10px}#app-transfer-preview .at-selection-copy{width:calc(100% - 44px)}#app-transfer-preview .at-action{flex:1;font-size:10px}#app-transfer-preview .at-action svg{display:none}#app-transfer-preview .at-queue-summary{display:none}#app-transfer-preview .at-task{grid-template-columns:1fr 1fr 22px;gap:7px}#app-transfer-preview .at-task-route{grid-column:1;grid-row:auto;font-size:9px}#app-transfer-preview .at-task-state{grid-column:2;grid-row:1/3}#app-transfer-preview .at-task>.at-icon-button{grid-column:3;grid-row:1/3}#app-transfer-preview .at-task-app{grid-column:1;grid-row:1}#app-transfer-preview .at-footer{flex-wrap:wrap;font-size:9px}#app-transfer-preview .at-foot-status{display:none}#app-transfer-preview .at-footer>div{justify-content:space-between;width:100%}}
+@media(prefers-reduced-motion:reduce){#app-transfer-preview .at-devices{scroll-behavior:auto}#app-transfer-preview .at-progress span{transition:none}}
+</style>
+<script>
+(()=>{
+const root=document.getElementById('app-transfer-preview');
+const $=(s)=>root.querySelector(s), $$=(s)=>Array.from(root.querySelectorAll(s));
+const icons=()=>{if(globalThis.lucide)globalThis.lucide.createIcons({attrs:{width:16,height:16}})};
+const I=(name,cls='')=>`<i data-lucide="${name}" class="${cls}" aria-hidden="true"></i>`;
+const esc=(s)=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const apps={
+ avito:{name:'Авито',version:'200.5',size:174,icon:'avito',glyph:'',account:'angelina@example.com'},
+ tbank:{name:'Т-Банк',version:'6.13.6',size:288,icon:'tbank',glyph:'Т',account:'Сторонний Apple Account'},
+ yplaces:{name:'YPLACES',version:'1.30.1',size:43,icon:'yplaces',glyph:'y',account:'david@example.com'},
+ craftersy:{name:'Craftersy',version:'5.1',size:498,icon:'craftersy',glyph:'c',account:'david@example.com'},
+ au:{name:'AU',version:'222.1',size:186,icon:'au',glyph:'au',account:'david@example.com'},
+ online:{name:'Online',version:'16.0.0',size:421,icon:'online',glyph:'S',account:'Сторонний Apple Account'},
+ advance:{name:'Advance',version:'1.2',size:286,icon:'advance',glyph:'a',account:'david@example.com'},
+ mail:{name:'Mail App',version:'15.92.0',size:112,icon:'mail',glyph:'@',account:'angelina@example.com'},
+ telegram:{name:'Telegram',version:'12.0',size:156,icon:'telegram',lucide:'send',account:'david@example.com'},
+ whatsapp:{name:'WhatsApp',version:'25.28',size:218,icon:'whatsapp',lucide:'phone',account:'david@example.com'},
+ youtube:{name:'YouTube',version:'20.40',size:192,icon:'youtube',lucide:'play',account:'david@example.com'},
+ spotify:{name:'Spotify',version:'9.0',size:165,icon:'spotify',lucide:'audio-lines',account:'david@example.com'}
+};
+const phones=[{id:'p14',model:'iPhone 14 Pro Max',short:'iPhone 14',owner:'Ангелина',ios:'27.0.1',free:'64 ГБ',number:'14'}, {id:'p16',model:'iPhone 16 Pro Max',short:'iPhone 16',owner:'Давид',ios:'18.5',free:'128 ГБ',number:'16'}, {id:'p17',model:'iPhone 17 Pro Max',short:'iPhone 17',owner:'Ангелина',ios:'27.0.1',free:'204 ГБ',number:'17'}];
+let installed,library,tasks,selected,paused=true,timer=null,serial=3,filters={},newApps={},toastTimer,drag=null,queueOpen=true,tab='devices',libraryVisible=true,history=[];
+const settings={appearance:'system',density:'comfortable'};
+const shortName=(id)=>id==='library'?'Библиотека':phones.find(p=>p.id===id)?.short||id;
+function icon(id){const a=apps[id];return `<span class="at-icon at-icon-${a.icon}" aria-hidden="true">${a.icon==='avito'?'<b></b><b></b><b></b><b></b>':a.lucide?I(a.lucide):a.glyph}</span>`}
+function row(id,place){const a=apps[id],isNew=newApps[place]?.includes(id),isSelected=selected?.id===id&&selected.place===place;let meta=place==='library'?`${a.version} · ${a.size} МБ`:`${a.version}${isNew?' · Только что установлено':''}`;return `<button type="button" class="at-app-row${isSelected?' is-selected':''}${isNew?' is-new':''}" draggable="true" data-app="${id}" data-place="${place}" aria-pressed="${isSelected}">${icon(id)}<span class="at-app-copy"><span class="at-app-name">${a.name}</span><span class="at-app-meta">${meta}</span></span>${place==='library'||isNew?I('check','at-status-icon'):''}</button>`}
+function device(p){return `<section class="at-device" data-drop="${p.id}" data-device="${p.id}" aria-label="${p.model}, ${p.owner}"><div class="at-device-header"><div class="at-phone-icon" aria-hidden="true"><span>${p.number}</span></div><div><h2>${p.model}</h2><span class="at-device-owner">${p.owner} · iOS ${p.ios}</span></div><span class="at-usb"><b></b>USB</span></div><label class="at-search">${I('search')}<input aria-label="Поиск на ${p.model}" placeholder="Найти приложение" data-search="${p.id}"></label><div class="at-device-summary"><span data-counter="${p.id}"></span><span>Свободно ${p.free}</span></div><div data-list="${p.id}"></div><div class="at-device-foot">${I('move-horizontal')}<span>Перетаскивайте между колонками</span></div></section>`}
+function renderLists(){phones.forEach(p=>{const items=installed[p.id].filter(id=>apps[id].name.toLowerCase().includes((filters[p.id]||'').toLowerCase()));$(`[data-list="${p.id}"]`).innerHTML=items.map(id=>row(id,p.id)).join('')||'<div class="at-empty">Ничего не найдено</div>';$(`[data-counter="${p.id}"]`).textContent=`${installed[p.id].length} приложений`;});const items=library.filter(id=>apps[id].name.toLowerCase().includes((filters.library||'').toLowerCase()));$('.at-library-list').innerHTML=items.map(id=>row(id,'library')).join('')||'<div class="at-empty">Ничего не найдено</div>';$('.at-library-total').textContent=`${library.length} IPA · ${Math.round(library.reduce((n,id)=>n+apps[id].size,0))} МБ`;icons();}
+function renderSelection(){const a=apps[selected.id];const targets=phones.filter(p=>p.id!==selected.place);$('.at-selection').innerHTML=`${icon(selected.id)}<div class="at-selection-copy"><strong>${a.name} <span>· ${a.version}</span></strong><span>${shortName(selected.place)}${selected.place==='library'?' · '+a.account:''}</span></div>${selected.place!=='library'?`<button type="button" class="at-action" data-send="library" ${library.includes(selected.id)?'disabled':''}>${I('download')}${library.includes(selected.id)?'В библиотеке':'В библиотеку'}</button>`:''}${targets.map((p,i)=>`<button type="button" class="at-action ${i===targets.length-1?'primary':''}" data-send="${p.id}" ${installed[p.id].includes(selected.id)?'disabled':''}>${I('arrow-right')}На ${p.short}</button>`).join('')}`;icons();}
+function taskState(t){if(t.status==='done')return t.dest==='library'?'Сохранено в библиотеку':'Установлено';if(t.status==='canceled')return 'Отменено';if(t.status==='error')return 'Нужен другой Apple Account';if(t.status==='waiting')return 'В очереди';return ['Скачивание','Проверка IPA','Установка','Проверка на устройстве'][t.stage];}
+function renderQueue(){const pending=tasks.filter(t=>['active','waiting'].includes(t.status)),done=tasks.filter(t=>t.status==='done');$('.at-queue-count').textContent=String(pending.length||done.length);$('.at-queue-summary').textContent=pending.length?paused?'Приостановлено':'Выполняется последовательно':`${done.length} завершено`;const play=$('[data-action="play"]');play.innerHTML=I(paused?'play':'pause')+(paused?'Продолжить':'Пауза');play.disabled=!pending.length;$('.at-queue-list').hidden=!queueOpen;$('.at-queue-list').innerHTML=tasks.slice(-5).map(t=>`<div class="at-task ${t.status}"><div class="at-task-app">${icon(t.app)}<strong>${apps[t.app].name}</strong></div><div class="at-task-route"><span>${shortName(t.source)}</span>${I('arrow-right')}<span>${shortName(t.dest)}</span></div><div class="at-task-state"><div class="at-stage-title"><span>${taskState(t)}</span>${t.status==='active'?`<span>${Math.round(t.progress)}%</span>`:''}</div>${t.status==='active'?`<div class="at-progress" role="progressbar" aria-label="${apps[t.app].name}: ${taskState(t)}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(t.progress)}"><span style="width:${t.progress}%"></span></div>`:''}</div>${['active','waiting'].includes(t.status)?`<button type="button" class="at-icon-button" aria-label="Отменить ${apps[t.app].name}" data-cancel="${t.id}">${I('x')}</button>`:I(t.status==='done'?'check':t.status==='error'?'circle-alert':'minus')}</div>`).join('');icons();}
+function renderHistory(){$('.at-history').innerHTML=`<h2>Журнал действий</h2><p>Приложения, устройства и аккаунты, использованные для переноса.</p>${history.length?history.slice().reverse().map(h=>`<div class="at-history-row">${icon(h.app)}<div><strong>${apps[h.app].name} · ${apps[h.app].version}</strong><p>${shortName(h.source)} → ${shortName(h.dest)} · ${h.result}</p><p>${apps[h.app].account}</p></div><span>${h.time}</span></div>`).join(''):'<div class="at-empty">Здесь появятся выполненные действия</div>'}`;icons();}
+function toast(s){$('.at-toast').textContent=s;$('.at-toast').hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('.at-toast').hidden=true,3200);}
+function save(){if(window.openai?.setWidgetState)window.openai.setWidgetState({modelContent:{prototype:'iPhone App Transfer',libraryVisible,selectedApp:apps[selected.id].name,selectedDevice:shortName(selected.place)},privateContent:{libraryVisible,appearance:settings.appearance,density:settings.density}}).catch(()=>{});}
+function setLibrary(visible,persist=true){libraryVisible=visible;$('.at-library').hidden=!visible;const b=$('[data-action="library"]');b.setAttribute('aria-expanded',String(visible));b.setAttribute('aria-label',visible?'Скрыть библиотеку':'Показать библиотеку');if(persist)save();}
+function setTab(next){tab=next;$('.at-devices').hidden=tab!=='devices';$('.at-history').hidden=tab!=='history';$$('[data-tab]').forEach(b=>b.classList.toggle('is-active',b.dataset.tab===tab));if(tab==='history')renderHistory();}
+function cache(id){if(!library.includes(id)){library.push(id);renderLists();}}
+function finish(t){t.status='done';t.progress=100;if(t.dest!=='library'){if(!installed[t.dest].includes(t.app))installed[t.dest].unshift(t.app);(newApps[t.dest]??=[]).push(t.app);}history.push({app:t.app,source:t.source,dest:t.dest,result:taskState(t),time:new Date().toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'})});renderLists();renderSelection();if(tab==='history')renderHistory();toast(`${apps[t.app].name}: ${t.dest==='library'?'сохранено в библиотеку':'установлено на '+shortName(t.dest)}`);}
+function tick(){if(paused)return;let t=tasks.find(t=>t.status==='active');if(!t){t=tasks.find(t=>t.status==='waiting');if(!t){paused=true;clearInterval(timer);timer=null;renderQueue();return;}t.status='active';t.stage=library.includes(t.app)?2:0;t.progress=0;}t.progress=Math.min(100,t.progress+(t.stage===0?8:t.stage===1?34:t.stage===2?13:50));if(t.progress>=100){if(t.stage===0){t.stage=1;t.progress=0;}else if(t.stage===1){cache(t.app);if(t.dest==='library')finish(t);else{t.stage=2;t.progress=0;}}else if(t.stage===2){t.stage=3;t.progress=0;}else finish(t);}renderQueue();}
+function resume(){paused=false;if(!timer)timer=setInterval(tick,300);renderQueue();}
+function enqueue(id,source,dest){if(source===dest)return;if(dest==='library'&&library.includes(id)){toast(`${apps[id].name} уже есть в библиотеке`);return;}if(dest!=='library'&&installed[dest].includes(id)){toast(`${apps[id].name} уже установлено на ${shortName(dest)}`);return;}if(tasks.some(t=>t.app===id&&t.dest===dest&&['waiting','active'].includes(t.status))){toast('Это приложение уже в очереди');return;}const t={id:++serial,app:id,source,dest,status:'waiting',stage:0,progress:0};if(['tbank','online'].includes(id)){t.status='error';history.push({app:id,source,dest,result:'Нет доступа к аккаунту покупки',time:new Date().toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'})});toast('Нужен Apple Account, под которым получено приложение.');}tasks.push(t);if(t.status!=='error')resume();renderQueue();save();}
+function reset(){clearInterval(timer);timer=null;paused=true;serial=3;filters={};newApps={};installed={p14:['avito','tbank','yplaces','telegram','whatsapp','youtube','spotify'],p16:['craftersy','au','online','advance','mail','telegram','spotify'],p17:['avito','mail','telegram','whatsapp']};library=['avito','mail'];selected={id:'craftersy',place:'p16'};tasks=[{id:1,app:'craftersy',source:'p16',dest:'p17',status:'active',stage:0,progress:42},{id:2,app:'yplaces',source:'p14',dest:'library',status:'waiting',stage:0,progress:0},{id:3,app:'advance',source:'p16',dest:'p17',status:'waiting',stage:0,progress:0}];history=[{app:'avito',source:'p14',dest:'p17',result:'Установлено',time:'14:21'},{app:'mail',source:'library',dest:'p17',result:'Установлено',time:'14:22'}];$('.at-devices').innerHTML=phones.map(device).join('');$('[data-search="library"]').value='';renderLists();renderSelection();renderQueue();renderHistory();}
+root.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.app){selected={id:b.dataset.app,place:b.dataset.place};renderLists();renderSelection();save();return;}if(b.dataset.send){enqueue(selected.id,selected.place,b.dataset.send);return;}if(b.dataset.tab){setTab(b.dataset.tab);return;}if(b.dataset.jump){setTab('devices');const pane=$(`[data-device="${b.dataset.jump}"]`),scroller=$('.at-devices');scroller.scrollTo({left:pane.offsetLeft-scroller.offsetLeft,behavior:'smooth'});return;}if(b.dataset.cancel){const t=tasks.find(t=>t.id===Number(b.dataset.cancel));t.status='canceled';renderQueue();return;}switch(b.dataset.action){case'library':setLibrary(!libraryVisible);break;case'play':if(paused)resume();else{paused=true;renderQueue();}break;case'queue':queueOpen=!queueOpen;b.setAttribute('aria-expanded',String(queueOpen));renderQueue();break;case'accounts':$('.at-account-popover').hidden=!$('.at-account-popover').hidden;break;case'close-accounts':$('.at-account-popover').hidden=true;break;case'reset':reset();setTab('devices');toast('Пример возвращён к началу');break;}});
+root.addEventListener('input',e=>{if(e.target.dataset.search){filters[e.target.dataset.search]=e.target.value;renderLists();}});
+document.addEventListener('keydown',e=>{if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='s'){e.preventDefault();setLibrary(!libraryVisible);}if(e.key==='Escape'){$('.at-account-popover').hidden=true;clearDrag();}});
+function clearDrag(){drag=null;$$('.at-drop-overlay').forEach(el=>el.remove());$$('.is-drop-hover,.is-dragged').forEach(el=>el.classList.remove('is-drop-hover','is-dragged'));}
+root.addEventListener('dragstart',e=>{const row=e.target.closest('[data-app]');if(!row)return;drag={id:row.dataset.app,source:row.dataset.place};e.dataTransfer.setData('text/plain',JSON.stringify(drag));e.dataTransfer.effectAllowed='copy';row.classList.add('is-dragged');});
+root.addEventListener('dragover',e=>{if(!drag)return;const toggle=e.target.closest('[data-action="library"]');if(toggle){e.preventDefault();setLibrary(true,false);return;}const area=e.target.closest('[data-drop]');if(!area||area.dataset.drop===drag.source)return;e.preventDefault();e.dataTransfer.dropEffect='copy';$$('.at-drop-overlay').forEach(el=>{if(el.parentElement!==area)el.remove();});$$('.is-drop-hover').forEach(el=>{if(el!==area)el.classList.remove('is-drop-hover');});if(area.dataset.drop==='library')area.classList.add('is-drop-hover');else if(!area.querySelector('.at-drop-overlay')){const o=document.createElement('div');o.className='at-drop-overlay';o.innerHTML=`${I('arrow-down-to-line')}<strong>Установить ${apps[drag.id].name}</strong><small>На ${phones.find(p=>p.id===area.dataset.drop).model}</small><small>${library.includes(drag.id)?'Из библиотеки':'Сначала скачаем в библиотеку'}</small>`;area.appendChild(o);icons();}const scroller=$('.at-devices'),r=scroller.getBoundingClientRect();if(e.clientX>r.right-45)scroller.scrollLeft+=18;if(e.clientX<r.left+45)scroller.scrollLeft-=18;});
+root.addEventListener('dragleave',e=>{const area=e.target.closest('[data-drop]');if(area&&!area.contains(e.relatedTarget)){area.querySelector('.at-drop-overlay')?.remove();area.classList.remove('is-drop-hover');}});
+root.addEventListener('drop',e=>{if(!drag)return;const area=e.target.closest('[data-drop]'),toggle=e.target.closest('[data-action="library"]');if(!area&&!toggle)return;e.preventDefault();const d={...drag},dest=area?.dataset.drop||'library';clearDrag();enqueue(d.id,d.source,dest);});
+root.addEventListener('dragend',clearDrag);
+$('.at-account-popover').innerHTML=`<div class="at-popover-head"><span>Apple Accounts</span><button type="button" class="at-icon-button" data-action="close-accounts" aria-label="Закрыть">${I('x')}</button></div>${['david@example.com','angelina@example.com'].map(email=>`<div class="at-account-row">${I('circle-user-round')}<div><strong>${email}</strong><small>Вход выполнен · пример</small></div></div>`).join('')}`;
+function applyDesign(){root.style.colorScheme=settings.appearance==='system'?'light dark':settings.appearance;root.style.setProperty('--at-row-height',settings.density==='compact'?'49px':'57px');}
+function restore(s){const p=s?.privateContent;if(!p)return;if(typeof p.libraryVisible==='boolean')setLibrary(p.libraryVisible,false);if(['system','light','dark'].includes(p.appearance))settings.appearance=p.appearance;if(['comfortable','compact'].includes(p.density))settings.density=p.density;applyDesign();}
+reset();restore(window.openai?.widgetState);window.addEventListener('openai:set_globals',e=>restore(e.detail?.globals?.widgetState));
+if(globalThis.Tweak){const tweak=new Tweak({container:root,onChange:()=>{applyDesign();save();}});tweak.addSelect(settings,'appearance',{label:'Оформление',options:[{label:'По системе',value:'system'},{label:'Тёмное',value:'dark'},{label:'Светлое',value:'light'}]});tweak.addSelect(settings,'density',{label:'Плотность списка',options:[{label:'Обычная',value:'comfortable'},{label:'Компактная',value:'compact'}]});}
+})();
+</script>
