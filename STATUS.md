@@ -11,9 +11,14 @@
 - [x] SHA-256 manifest/operations/preferences совпал до/после запуска; количество IPA осталось восемь. Новые задачи, установки и удаления на телефонах не выполнялись. На момент этой проверки USB-телефон не определяется.
 - [x] Native synthetic: новое длинное имя помещается в 760 × 560 pt light/EN и 1160 × 820 pt dark/RU; private QA captures находятся только в ignored `.build`.
 - [x] Release `.app`/DMG: ad-hoc strict signature, 8 Mach-O / 6 dylib closure, read-only mount, Applications link, текущие notices/37 Go module licenses, source digest и relocated helper hello — pass. Gatekeeper/clean Mac этим не подтверждены.
-- [ ] GitHub private creation/push, release readback и fresh-clone check: результат фиксируется после фактической публикации.
+- [x] Приватный GitHub `Daveedick/iphone-app-transfer` создан; API подтвердил `isPrivate=true`, `visibility=PRIVATE`. Исходный main совпал с локальным commit.
+- [x] Приватный prerelease `v0.1.4` опубликован с DMG/checksum; оба файла скачаны обратно, SHA-256 совпал с локальным проверенным образом.
+- [x] Свежий clone: все 327 tracked-файлов получены, release `.app` собран с нуля на том же Mac; runtime source SHA совпал. Это проверяет комплектность исходников, не clean Mac.
+- [x] Staged privacy/link audit: собственные тексты и 13 PNG без найденных секретов/реальных inventory; IPA/auth/build files исключены. Vendored core сопоставлен с pinned module ZIP: 233 файла, только три заявленных cache-namespace изменения.
 
-DMG: `dist/iPhone-App-Transfer-0.1.4-arm64.dmg`, 23563105 bytes, SHA-256 `64878b19d5cd1146be43b4c0ceeed0c8c392f3d9c64065658b5fd76b4d1b3105`. Runtime source SHA-256 `b986c80d1217ffcbcdcd8e1404f8dd83b238ba86aaa35f7ec1ba0dcc0c301ac3`. Технические отчёты без секретов: `.build/packaging-verification/rename-0.1.4/report.json`, `.build/qa/rename-0.1.4/preservation.json`.
+DMG: `dist/iPhone-App-Transfer-0.1.4-arm64.dmg`, 23563105 bytes, SHA-256 `64878b19d5cd1146be43b4c0ceeed0c8c392f3d9c64065658b5fd76b4d1b3105`. Runtime source SHA-256 `b986c80d1217ffcbcdcd8e1404f8dd83b238ba86aaa35f7ec1ba0dcc0c301ac3`. Технические отчёты без секретов: `.build/packaging-verification/rename-0.1.4/report.json`, `.build/qa/rename-0.1.4/preservation.json`, `publication.json`, `fresh-clone.json` в той же private QA-папке.
+
+[Приватный репозиторий](https://github.com/Daveedick/iphone-app-transfer) · [Prerelease v0.1.4](https://github.com/Daveedick/iphone-app-transfer/releases/tag/v0.1.4). Тег относится к проверенному source commit `7f444465150b0e33d4c5daddbb3a071dc3ae68b2`; последующие изменения отчётов не меняют runtime inputs.
 
 Полный GUI install/readback/launch на втором телефоне, live второй аккаунт, iOS 27, чистый Mac и downloaded/quarantined Gatekeeper-flow остаются pending. Лицензия собственного кода пока не выбрана; public visibility требует отдельного решения.
 

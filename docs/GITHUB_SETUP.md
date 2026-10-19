@@ -56,6 +56,19 @@ git ls-remote origin refs/heads/main
 
 Ожидается `isPrivate: true`, `visibility: PRIVATE` и одинаковый SHA локального `HEAD`/удалённого `main`. Описание и release notes не должны обещать завершённые проверки второго телефона, двух аккаунтов или чистого Mac.
 
+## Если API работает, а Git push зависает
+
+В первой отправке на Mac автора API GitHub работал, но HTTP-транспорт Git задержал завершение. Перед повтором проверьте удалённый SHA: коммит уже мог попасть на сервер. Помог однократный запуск с настройками только для команды:
+
+```sh
+git -c http.version=HTTP/1.1 \
+  -c http.postBuffer=10485760 \
+  -c http.lowSpeedLimit=1024 \
+  -c http.lowSpeedTime=30 push -u origin main
+```
+
+Это не отключает TLS-проверку и не меняет глобальные настройки Git. Не запускайте повторную авторизацию, если `gh api user --jq .login` уже работает. В ограниченной среде HTTP 401 при чтении Keychain может требовать разрешённого запуска конкретной операции вне sandbox; токен выводить не нужно.
+
 ## Приватный prerelease
 
 Сначала собрать и проверить `.app`/DMG по [инструкции сборки](../scripts/README.md). Изменение README не подтверждает существование рабочего DMG. Установка через GUI на второй телефон и чистый Mac остаётся pending до фактического теста.
@@ -97,6 +110,8 @@ gh release create v0.1.4 \
 GitHub CLI handles repository and release operations from Terminal; the browser is needed only for initial authorization or a later reauthorization. On the author's Mac, authentication as `Daveedick` has already been checked. Start with `gh api user --jq .login`; do not repeat `gh auth login` when that succeeds. `gh auth setup-git --hostname github.com` configures Git to use the CLI's credentials. Never print or share a token for troubleshooting.
 
 The commands above cover first-time private creation, verification and the `v0.1.4` prerelease. Inspect existing local/remote state before using them. Review the staged tree for secrets, real phone inventories, IPA files and personal screenshots before the first commit. Keep dependency source/patches/licenses needed by the bundled helper. Exclude `.build` and `dist`; upload the DMG and its checksum as release assets instead of Git source files.
+
+If Git transport stalls while the CLI API succeeds, inspect the remote SHA before retrying; the scoped HTTP/1.1 command above does not weaken TLS verification or change global Git settings.
 
 Verify `PRIVATE`, the remote commit SHA, downloaded asset checksum and a fresh clone. None of these checks proves the second-phone installation or a clean-Mac first run. The repository remains private until the owner explicitly chooses public distribution after live testing, license selection and a full-history privacy review. A prerelease flag does not control repository visibility.
 

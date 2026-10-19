@@ -110,6 +110,6 @@ No phone mutation or new transfer was needed. Existing live-install/clean-Mac ga
 - [x] RU/EN README, текущий handoff, инструкции GitHub и сборки обновлены; исторические материалы отмечены.
 - [x] Core22/115, Go race/vet, C sanitizer checks, native bundle/DMG integrity и relocated helper hello пройдены.
 - [x] Длинное имя проверено в minimum light/EN и normal dark/RU synthetic layouts.
-- [ ] Private GitHub/release/fresh clone: окончательный readback см. STATUS/QA после публикации.
+- [x] PRIVATE подтверждён GitHub API; prerelease/DMG/checksum опубликованы, скачанный SHA-256 совпал; свежий clone собрал release `.app` с тем же runtime source digest. Подробности STATUS/QA.
 
 Эта поставка остаётся preview: второй телефон/live install/readback/launch, второй live аккаунт и clean-Mac/Gatekeeper остаются открытыми.
