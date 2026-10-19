@@ -1,8 +1,8 @@
 # Статус проекта
 
-Обновлено: 19.10.2026. Собрана и открыта локальная **0.1.5 (6)** с пояснениями аккаунтов; публично доступен preview 0.1.4 (5). Пользователь одобрил локальный результат и разрешил commit/push; новый DMG-релиз пока не опубликован. Незавершённые live-проверки сохраняются.
+Обновлено: 19.10.2026. Пользователь одобрил локальную **0.1.5 (6)** с пояснениями аккаунтов, commit/push и публикацию. [Публичный prerelease v0.1.5](https://github.com/Daveedick/iphone-app-transfer/releases/tag/v0.1.5) опубликован с проверенными DMG/checksum; скачивание без авторизации и SHA-256 подтверждены. Незавершённые live-проверки сохраняются.
 
-## 19.10.2026 — 0.1.5 (6): аккаунты App Store, локальная приёмка
+## 19.10.2026 — 0.1.5 (6): аккаунты App Store, приёмка и prerelease
 
 - [x] Общий resolver аккаунта для предварительного показа и создания задачи; сохранены owner-first выбор и явный выбор для конкретной задачи.
 - [x] Разделены аккаунт скачивания и подсказка из метаданных IPA. Импортированные/старые неизвестные записи не объявляются скачанными под известным аккаунтом; конфликт показывается явно.
@@ -15,12 +15,14 @@
 - [x] Обычный запуск финальной `.app`: видны все 10 IPA и сохранённая очередь. SHA-256 manifest/operations/preferences совпал с baseline; 20 задач и 24 события сохранены. Телефон на этой проверке не подключён.
 - [x] Устранена зависимость показа библиотеки/очереди от ожидания реестра аккаунтов. Нативное чтение аккаунтов сейчас остаётся внутри macOS `SecItemCopyMatching`; показаны честное ожидание и подсказка о системном запросе Keychain. Авторизация Apple и новая загрузка этой проверкой не подтверждены.
 - [x] Пользователь одобрил локальный результат и продолжение с commit/push. Это не закрывает перечисленные live-проверки.
-- [x] Исходники отправлены в публичный `origin/main`: [`e06706c`](https://github.com/Daveedick/iphone-app-transfer/commit/e06706cd0974d4b187c4370e2ffceeb18cf1397e). GitHub API подтвердил SHA удалённой ветки. DMG-релиз v0.1.5 пока не создавался.
-- [ ] Публикация DMG/checksum как нового GitHub prerelease v0.1.5; текущая публичная загрузка остаётся v0.1.4.
+- [x] Исходники отправлены в публичный `origin/main`: runtime commit [`e06706c`](https://github.com/Daveedick/iphone-app-transfer/commit/e06706cd0974d4b187c4370e2ffceeb18cf1397e). Тег `v0.1.5` указывает на [`7a5c202`](https://github.com/Daveedick/iphone-app-transfer/commit/7a5c202495b28035854c702ed134e7f9a75c7d9b), включающий готовые документы поставки; runtime inputs не менялись.
+- [x] По отдельному одобрению пользователя опубликован GitHub prerelease v0.1.5 с DMG/checksum: `draft=false`, `prerelease=true`.
+- [x] Без авторизации получены HTTP 200 для репозитория, тега, релиза, DMG и checksum. Скачанный DMG: 23661245 bytes; SHA-256 совпал с проверенным локальным образом, `shasum -c` — OK.
+- [x] Свежий clone тега без credentials: 329 tracked-файлов, SHA коммита и runtime source digest совпали. Новая сборка из этого clone не выполнялась; clean Mac этим не проверен.
 
-Локальный DMG: `dist/iPhone-App-Transfer-0.1.5-arm64.dmg`, 23661245 bytes, SHA-256 `d4a49789ca23000074dc4450b57c4f3bbb446638bba4e43f1373d1078cd92e8b`. Runtime source SHA-256 `66ee5e9b8b0cd4fce35372ae67079bc1a10ef1cd3e2ea0c38abf6b1c608c8efc`.
+Опубликованный DMG: `dist/iPhone-App-Transfer-0.1.5-arm64.dmg`, 23661245 bytes, SHA-256 `d4a49789ca23000074dc4450b57c4f3bbb446638bba4e43f1373d1078cd92e8b`. Runtime source SHA-256 `66ee5e9b8b0cd4fce35372ae67079bc1a10ef1cd3e2ea0c38abf6b1c608c8efc`.
 
-Текущие локальные отчёты: `.build/qa/accounts-0.1.5/`. Bundle ID, Swift executable/modules, Keychain, preferences и пути хранения сохранены. Новые live install/uninstall/login/download операции не выполнялись; проверки второго телефона/аккаунта, чистого Mac и выбор лицензии собственного кода остаются открытыми.
+Текущие локальные отчёты: `.build/qa/accounts-0.1.5/`, включая `publication.json` и `fresh-clone-release.json`. Bundle ID, Swift executable/modules, Keychain, preferences и пути хранения сохранены. Новые live install/uninstall/login/download операции не выполнялись; проверки второго телефона/аккаунта, чистого Mac и выбор лицензии собственного кода остаются открытыми.
 
 ## 19.10.2026 — публичный доступ
 

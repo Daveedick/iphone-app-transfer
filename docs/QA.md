@@ -1,17 +1,19 @@
-# Локальная проверка iPhone App Transfer 0.1.5 (6)
+# Проверка и публикация iPhone App Transfer 0.1.5 (6)
 
-19.10.2026. Пользователь проверил локальную сборку и одобрил продолжение с commit/push. Публикация DMG/checksum как v0.1.5 пока не выполнена; текущий публичный бинарный выпуск остаётся v0.1.4. Одобрение интерфейса не заменяет pending live-проверки ниже.
+19.10.2026. Пользователь проверил локальную сборку и одобрил commit/push и prerelease. [v0.1.5](https://github.com/Daveedick/iphone-app-transfer/releases/tag/v0.1.5) опубликован с DMG/checksum; публичное скачивание и совпадение SHA-256 проверены. Одобрение интерфейса не заменяет pending live-проверки ниже.
 
 - **Core/Coordinator:** 30 portable CLT tests, 176 assertions, 0 failures; negative harness self-check pass. Новые проверки охватывают owner-first/default/unresolved selection, source A → actual download/IPA B, импорт без Mac-account, metadata/download conflict, legacy JSON и snapshot истории после удаления синтетического IPA. Это не XCTest и не live install.
 - **Native GUI:** synthetic RU/dark 1160 × 820 и EN/light 760 × 560, длинные email; AX readback account popover RU/EN, явной причины выбора, import/unknown/conflict, Activity с аккаунтом фактического IPA, обеих плотностей и свёрнутой очереди. Snapshot-host keyboard transport inconclusive; не выдаётся за полную проверку клавиатуры/VoiceOver.
 - **Обычный запуск:** финальная `.app` показывает 10 существующих IPA и сохранённую очередь; manifest, operations и preferences имеют прежние SHA-256. Сохранены 20 задач и 24 события. Новые задачи/phone install/uninstall/login/download не выполнялись; USB-телефон отсутствует.
 - **Keychain:** реальное чтение registry ожидает внутри `SecItemCopyMatching` (подтверждено коротким stack sample без данных авторизации). Startup теперь отображает библиотеку/очередь до завершения этого чтения; аккаунты имеют явное loading-состояние. Новый login, актуальность Apple-сессии и скачивание не проверены. Системные ACL/защита macOS не менялись.
 - **Упаковка:** release `.app` 0.1.5 (6), strict ad-hoc signature, 8 Mach-O / 6 dylib closure, 37 Go module notices, исходный digest, DMG CRC/checksum, read-only mount, Applications symlink и relocated helper hello — pass. Helper/C не менялись; Go race/vet и C sanitizers повторно для этой правки не запускались.
-- **Git:** действующая терминальная авторизация `Daveedick` подтверждена вне sandbox. После локального одобрения пользователя исходники отправлены в `main`; GitHub API подтвердил `e06706cd0974d4b187c4370e2ffceeb18cf1397e`. Тег и GitHub Release v0.1.5 не создавались.
+- **Git:** действующая терминальная авторизация `Daveedick` подтверждена вне sandbox. Runtime commit `e06706cd0974d4b187c4370e2ffceeb18cf1397e` отправлен в публичный `main`; тег `v0.1.5` указывает на `7a5c202495b28035854c702ed134e7f9a75c7d9b` с документами поставки. Позднейшие изменения отчётов не меняют runtime inputs и тег.
+- **Публикация:** GitHub API подтверждает `draft=false`, `prerelease=true`, публичный репозиторий и ровно два вложения — DMG (23661245 bytes) и checksum (102 bytes). Без credentials получены HTTP 200 для страницы/метаданных релиза, репозитория, тега и обоих файлов; SHA-256 скачанного DMG совпал, `shasum -c` — OK.
+- **Свежий clone:** тег получен без credential helper и интерактивного входа; 329 tracked-файлов, commit и runtime digest совпали с проверенной сборкой. Сборка из этого clone повторно не выполнялась; это проверка доступности и комплектности исходников, не clean Mac.
 
 DMG: `dist/iPhone-App-Transfer-0.1.5-arm64.dmg`, 23661245 bytes. SHA-256 `d4a49789ca23000074dc4450b57c4f3bbb446638bba4e43f1373d1078cd92e8b`. Runtime source SHA-256 `66ee5e9b8b0cd4fce35372ae67079bc1a10ef1cd3e2ea0c38abf6b1c608c8efc`.
 
-Private ignored evidence: `.build/qa/accounts-0.1.5/core-results.log`, `build.json`, `packaging.json`, `preservation.json`, `git-access.json` и synthetic PNG. Clean Mac/Gatekeeper, live второй аккаунт/устройство/запуск и лицензия собственного кода остаются открытыми.
+Private ignored evidence: `.build/qa/accounts-0.1.5/core-results.log`, `build.json`, `packaging.json`, `preservation.json`, `git-access.json`, `publication.json`, `fresh-clone-release.json` и synthetic PNG. Clean Mac/Gatekeeper, live второй аккаунт/устройство/запуск и лицензия собственного кода остаются открытыми.
 
 ---
 

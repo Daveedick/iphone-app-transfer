@@ -4,16 +4,16 @@
 
 Сначала прочитать `AGENTS.md`, `STATUS.md`, `docs/QA.md`, оба README, `PRODUCT.md`, `DESIGN.md` и `docs/ARCHITECTURE.md`. Проверить фактический Git/remote/release: завершённые действия повторно не выполнять.
 
-## Текущая одобренная поставка
+## Текущая завершённая поставка
 
-19.10.2026 пользователь утвердил название **iPhone App Transfer** и план поставки, а затем прямо разрешил сразу сделать репозиторий публичным. Это новое решение заменяет первоначальный приватный этап:
+19.10.2026 пользователь одобрил локальную **iPhone App Transfer 0.1.5 (6)** с пояснениями аккаунтов, commit/push и публичный prerelease. Поставка завершена:
 
-1. Привести видимое название в приложении, сборке, установщике и текущих документах к **iPhone App Transfer**.
-2. Сохранить технические идентификаторы и пользовательские данные: Bundle ID, Keychain service/keys, UserDefaults, `~/Library/Application Support/AppTransfer`, `~/Library/Caches/App Transfer`, Swift-модули и внутренний executable `AppTransfer`.
-3. Собрать 0.1.4 (5): `dist/iPhone App Transfer.app`, `dist/iPhone-App-Transfer-0.1.4-arm64.dmg`, SHA-256. Проверить локальную сборку и упаковку; исторические артефакты/скриншоты не перелицовывать.
-4. Завершить подробные README на английском и русском без новых скриншотов; очистить будущий source commit от личных данных/секретов/IPA.
-5. Через GitHub CLI поддерживать `main`, публичный `Daveedick/iphone-app-transfer` и prerelease `v0.1.4` с DMG/checksum. Проверить PUBLIC, remote commit, доступ без авторизации, скачивание и свежий clone. Инструкция: `docs/GITHUB_SETUP.md`.
-6. Обновить STATUS/QA только по фактическим проверкам. Полный GUI install/readback/launch на втором телефоне, два аккаунта и чистый Mac остаются отдельными live-проверками, пока соответствующего evidence нет.
+1. Видимое имя — **iPhone App Transfer**. Аккаунт скачивания и подсказка о возможном аккаунте на iPhone явно разделены в интерфейсе RU/EN.
+2. Технические идентификаторы и пользовательские данные сохранены: Bundle ID, Keychain service/keys, UserDefaults, `~/Library/Application Support/AppTransfer`, `~/Library/Caches/App Transfer`, Swift-модули и внутренний executable `AppTransfer`.
+3. Проверены `dist/iPhone App Transfer.app`, `dist/iPhone-App-Transfer-0.1.5-arm64.dmg` и SHA-256. Исторические артефакты/скриншоты сохранены.
+4. Исходники и текущие README на английском и русском отправлены в публичный `Daveedick/iphone-app-transfer`; реальные IPA, credentials и private QA-логи исключены из source control.
+5. [Prerelease v0.1.5](https://github.com/Daveedick/iphone-app-transfer/releases/tag/v0.1.5) опубликован с DMG/checksum. Проверены доступ без авторизации, скачивание, SHA-256 и свежий clone тега. Инструкция: `docs/GITHUB_SETUP.md`.
+6. Актуальные результаты и границы проверки — в `STATUS.md` и `docs/QA.md`. Полный GUI install/readback/launch на втором телефоне, второй аккаунт и чистый Mac остаются отдельными live-проверками; чтение аккаунтов в текущем окружении ожидает `SecItemCopyMatching`.
 
 Публичный доступ уже явно разрешён пользователем и не требует повторного согласования. Лицензия собственного кода ещё не выбрана; открытый доступ не означает завершённую live-приёмку или наличие open-source лицензии. Текущая авторизация на поставку не требует заново спрашивать разрешение на каждый commit/push/release. Реальные изменения приложений на телефонах требуют соответствующего уже данного или нового точного разрешения; не делать их ради переименования.
 
