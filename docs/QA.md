@@ -7,7 +7,7 @@
 - **Обычный запуск:** финальная `.app` показывает 10 существующих IPA и сохранённую очередь; manifest, operations и preferences имеют прежние SHA-256. Сохранены 20 задач и 24 события. Новые задачи/phone install/uninstall/login/download не выполнялись; USB-телефон отсутствует.
 - **Keychain:** реальное чтение registry ожидает внутри `SecItemCopyMatching` (подтверждено коротким stack sample без данных авторизации). Startup теперь отображает библиотеку/очередь до завершения этого чтения; аккаунты имеют явное loading-состояние. Новый login, актуальность Apple-сессии и скачивание не проверены. Системные ACL/защита macOS не менялись.
 - **Упаковка:** release `.app` 0.1.5 (6), strict ad-hoc signature, 8 Mach-O / 6 dylib closure, 37 Go module notices, исходный digest, DMG CRC/checksum, read-only mount, Applications symlink и relocated helper hello — pass. Helper/C не менялись; Go race/vet и C sanitizers повторно для этой правки не запускались.
-- **Git:** действующая терминальная авторизация `Daveedick` подтверждена вне sandbox. Commit/push/tag/release для 0.1.5 не выполнялись.
+- **Git:** действующая терминальная авторизация `Daveedick` подтверждена вне sandbox. После локального одобрения пользователя исходники отправлены в `main`; GitHub API подтвердил `e06706cd0974d4b187c4370e2ffceeb18cf1397e`. Тег и GitHub Release v0.1.5 не создавались.
 
 DMG: `dist/iPhone-App-Transfer-0.1.5-arm64.dmg`, 23661245 bytes. SHA-256 `d4a49789ca23000074dc4450b57c4f3bbb446638bba4e43f1373d1078cd92e8b`. Runtime source SHA-256 `66ee5e9b8b0cd4fce35372ae67079bc1a10ef1cd3e2ea0c38abf6b1c608c8efc`.
 
