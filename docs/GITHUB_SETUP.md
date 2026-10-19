@@ -1,6 +1,6 @@
 # GitHub CLI и публикация / GitHub CLI and delivery
 
-Repository: [`Daveedick/iphone-app-transfer`](https://github.com/Daveedick/iphone-app-transfer). Product: **iPhone App Transfer**. The current delivery is **public**, including prerelease [`v0.1.4`](https://github.com/Daveedick/iphone-app-transfer/releases/tag/v0.1.4). The owner explicitly authorized public visibility immediately after the initial private delivery. Original-code license selection and live acceptance checks remain pending. Check actual repository/release state before repeating any creation command.
+Repository: [`Daveedick/iphone-app-transfer`](https://github.com/Daveedick/iphone-app-transfer). Product: **iPhone App Transfer**. The current delivery is **public**, including prerelease [`v0.1.5`](https://github.com/Daveedick/iphone-app-transfer/releases/tag/v0.1.5), build 6. The owner approved the local account-clarification update, source commit/push and publication of its verified DMG/checksum. Original-code license selection and live acceptance checks remain pending. Check actual repository/release state before repeating any creation command.
 
 ## Постоянный доступ к GitHub CLI
 
@@ -73,6 +73,33 @@ git -c http.version=HTTP/1.1 \
 
 Сначала собрать и проверить `.app`/DMG по [инструкции сборки](../scripts/README.md). Изменение README не подтверждает существование рабочего DMG. Установка через GUI на второй телефон и чистый Mac остаётся pending до фактического теста.
 
+### 0.1.5 (6): текущая публичная поставка
+
+Пользователь явно одобрил публикацию этого prerelease после локального теста. Runtime inputs проверенного DMG соответствуют source commit `e06706cd0974d4b187c4370e2ffceeb18cf1397e`; тег может включать последующие изменения только документации. Runtime source digest: `66ee5e9b8b0cd4fce35372ae67079bc1a10ef1cd3e2ea0c38abf6b1c608c8efc`.
+
+Проверенный DMG: `iPhone-App-Transfer-0.1.5-arm64.dmg`, 23 661 245 bytes, SHA-256 `d4a49789ca23000074dc4450b57c4f3bbb446638bba4e43f1373d1078cd92e8b`. Не менять опубликованные assets или tag вслепую. Сначала проверить существование v0.1.5 и его target/assets. Если тег/релиз отсутствуют и текущий коммит проверен:
+
+```sh
+git tag v0.1.5
+git push origin v0.1.5
+gh release create v0.1.5 \
+  --repo Daveedick/iphone-app-transfer \
+  --verify-tag \
+  --prerelease \
+  --title 'iPhone App Transfer 0.1.5 — preview' \
+  --notes-file .build/qa/accounts-0.1.5/release-notes.md \
+  dist/iPhone-App-Transfer-0.1.5-arm64.dmg \
+  dist/iPhone-App-Transfer-0.1.5-arm64.dmg.sha256
+git rev-list -n 1 v0.1.5
+gh release view v0.1.5 --repo Daveedick/iphone-app-transfer
+```
+
+Release notes — подготовленный RU/EN файл, без секретов и личных данных. После публикации скачать оба assets в отдельный временный каталог, проверить sidecar через `shasum -a 256 -c iPhone-App-Transfer-0.1.5-arm64.dmg.sha256`, сверить размер/hash и подтвердить чтение без авторизации. Source digest DMG остаётся проверенным при изменениях только документации; новые runtime inputs требуют пересборки.
+
+Выпуск проверен 30 portable Core-тестами / 176 assertions и native synthetic/packaging checks; полные результаты находятся в STATUS/QA. На текущем Mac системный Keychain-вызов блокирует чтение аккаунтов. Библиотека/очередь запускаются независимо, но новый живой login/download не подтверждён. Второй телефон/аккаунт, запуск, чистый Mac, downloaded-DMG/Gatekeeper и полная клавиатурная проверка остаются pending.
+
+### История 19.10.2026: prerelease v0.1.4
+
 Тег и release должны относиться к проверенному коммиту. Если `v0.1.4` уже существует, сравнить target и артефакты; не перемещать опубликованный тег и не заменять чужой файл вслепую. После подготовки release notes в обычном UTF-8 файле:
 
 ```sh
@@ -109,7 +136,7 @@ gh release create v0.1.4 \
 
 GitHub CLI handles repository and release operations from Terminal; the browser is needed only for initial authorization or a later reauthorization. On the author's Mac, authentication as `Daveedick` has already been checked. Start with `gh api user --jq .login`; do not repeat `gh auth login` when that succeeds. `gh auth setup-git --hostname github.com` configures Git to use the CLI's credentials. Never print or share a token for troubleshooting.
 
-The private-creation commands above record the initial delivery history and must not recreate the existing public repository. The remaining commands describe verification and the `v0.1.4` prerelease. Inspect existing local/remote state before using them. Review the staged tree for secrets, real phone inventories, IPA files and personal screenshots before the first commit. Keep dependency source/patches/licenses needed by the bundled helper. Exclude `.build` and `dist`; upload the DMG and its checksum as release assets instead of Git source files.
+The private-creation commands and dated `v0.1.4` example above record earlier delivery history and must not recreate or replace those published artifacts. The current release is `v0.1.5` (build 6); the owner explicitly authorized source and binary publication after local review. Inspect existing local/remote state before using the current commands. Review the staged tree for secrets, real phone inventories, IPA files and personal screenshots. Keep dependency source/patches/licenses needed by the bundled helper. Exclude `.build` and `dist`; upload the DMG and its checksum as release assets instead of Git source files.
 
 If Git transport stalls while the CLI API succeeds, inspect the remote SHA before retrying; the scoped HTTP/1.1 command above does not weaken TLS verification or change global Git settings.
 

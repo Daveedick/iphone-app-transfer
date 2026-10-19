@@ -4,9 +4,7 @@
 
 A native macOS utility for moving eligible iPhone apps through a local IPA library. Connect your phones, see their apps side by side, download an available archive from Apple, and queue installation on another phone. Devices have equal roles, with no permanent source/target selection or two-phone limit.
 
-**Apple Silicon · macOS 15+ · 0.1.4 public preview.** Device discovery, fresh GUI Apple Account sign-in, a real download, library reuse, and local packaging have been verified. The new app's complete installation/readback/launch flow on a second iPhone remains pending. Availability and successful launch are not guaranteed for every app.
-
-The account explanations described below are the **0.1.5 (6) update**, approved locally for source delivery. Its DMG release has not yet been published. The public download remains v0.1.4; current verification is recorded in [QA](docs/QA.md) and [status](STATUS.md).
+**Apple Silicon · macOS 15+ · 0.1.5 (6) public preview.** This update clarifies download and iPhone accounts and keeps the library available during a Keychain wait. Earlier previews verified device discovery, GUI sign-in, a real download and library reuse. A new live sign-in/download and complete installation/readback/launch on a second iPhone remain unverified. Availability and successful launch are not guaranteed for every app. See [QA](docs/QA.md) and [status](STATUS.md) for the scope of each check.
 
 ## Contents
 
@@ -35,7 +33,7 @@ Local app data, banking sessions, passwords, and in-app sign-ins are outside the
 
 ## Install
 
-Get the DMG and accompanying SHA-256 file from the [public preview v0.1.4 release](https://github.com/Daveedick/iphone-app-transfer/releases/tag/v0.1.4). The repository and release downloads are publicly accessible; no repository invitation is needed. **Code → Download ZIP** supplies source code, not an installer. The next local review outputs are `dist/iPhone-App-Transfer-0.1.5-arm64.dmg` and `dist/iPhone App Transfer.app`; v0.1.5 is not yet published.
+Get the DMG and accompanying SHA-256 file from the [public preview v0.1.5 release](https://github.com/Daveedick/iphone-app-transfer/releases/tag/v0.1.5). The repository and release downloads are publicly accessible; no repository invitation is needed. **Code → Download ZIP** supplies source code, not an installer. Local outputs are `dist/iPhone-App-Transfer-0.1.5-arm64.dmg` and `dist/iPhone App Transfer.app`.
 
 Open the DMG, drag **iPhone App Transfer** into **Applications**, and launch that copy. The packaged app includes its helper and native libraries. End users do not need Terminal, Homebrew, Go, iMazing, or a separate ipatool installation.
 
@@ -57,6 +55,8 @@ An **offloaded** app is a placeholder without its installed executable. Metadata
 ## Accounts and licenses
 
 Open **App Store Accounts**, enter the Apple Account email and password, and complete the verification-code prompt if Apple requests one. Enter credentials only in the app's secure form. Authentication preparation may show an indeterminate progress message.
+
+**Known issue:** on the current development Mac, the system Keychain call remains blocked while reading the account registry. The app shows a loading explanation and starts the local library and queue independently. Review any macOS Keychain access prompt; a fresh live sign-in/download has not been verified for 0.1.5.
 
 These accounts download IPA files from Apple's servers. Availability depends on the account's region, rights to the app, and whether Apple supplies the requested version. The tool is not an independent archive of every app and does not bypass regional availability or acquire licenses automatically. Apps installed by a bank or service center can belong to an inaccessible account.
 
@@ -161,7 +161,8 @@ The first authorized login or download may fetch pinned, checksum-verified Apple
 | --- | --- |
 | Phone missing/locked/trust required | Check the USB data connection, unlock with the passcode, accept Trust, refresh. |
 | Account/license required | Select the original download account. Another account may not obtain the app. |
-| Session expired/Keychain unavailable | Sign in again; review the system access prompt and unlock the login keychain if needed. |
+| Session expired | Sign in again through App Store Accounts. |
+| Account list stays loading | Review any macOS Keychain access prompt. Library and queue remain available; the current system registry-read wait is an open issue. |
 | Rejected verification code | Check the current code and retry in the form. Never include it in reports. |
 | Apple request failed/unavailable download | Check connection, account, app availability, and any offered alternative version. |
 | Missing/invalid IPA | Reimport a valid original or retry an authorized download. |
@@ -175,9 +176,11 @@ For reports, include app/macOS/iOS versions, the attempted action, and the displ
 
 Verified on macOS 15.6.1/Apple Silicon with iPhone 16 Pro Max/iOS 18.5: direct metadata/discovery, fresh GUI sign-in, real Craftersy 5.1 download/validation, reuse, persistence, synthetic import/Trash deletion, and native settings/selection/queue resizing. Packaging checks cover signatures, dependencies, DMG integrity, and relocation on the same Mac.
 
-For 0.1.4, **22 portable Core tests / 115 assertions**, Go helper race tests and vet, and the C bridge AddressSanitizer/UndefinedBehaviorSanitizer checks passed. The native build and bundle signature/dependency checks also passed. DMG and GUI results are recorded separately in the current QA/status documents; the version rename does not establish new live-device or clean-Mac coverage.
+For 0.1.5, **30 portable Core tests / 176 assertions** passed. Synthetic native checks covered RU/EN, minimum window, themes and densities. The existing 10 IPAs, 20 jobs and 24 activity records and their hashes were preserved. Bundle verification covered signatures, 8 Mach-O / 6 dylibs, DMG integrity/read-only mount and relocated helper startup. The system Keychain registry-read wait remains open; this does not establish a new live login/download or phone installation.
 
-Pending: complete install/readback/launch on iPhone 17/a second device; live second-account and invalid-code/session-expiry recovery; iOS 27; clean-user/clean-Mac auth/runtime setup; downloaded DMG/Gatekeeper; full accessibility and multi-device drag checks. Three/five-phone layout fixtures are synthetic. Earlier standalone CLI success does not verify this app's bridge.
+For the earlier 0.1.4 delivery, 22 portable Core tests / 115 assertions, Go helper race tests and vet, and C bridge AddressSanitizer/UndefinedBehaviorSanitizer checks passed. Those helper/C results retain their earlier date and scope.
+
+Pending: complete install/readback/launch on iPhone 17/a second device; live second-account and invalid-code/session-expiry recovery; iOS 27; clean-user/clean-Mac auth/runtime setup; downloaded DMG/Gatekeeper; full keyboard/accessibility and multi-device drag checks. Three/five-phone layout fixtures are synthetic. Earlier standalone CLI success does not verify this app's bridge.
 
 See [QA evidence](docs/QA.md), [acceptance](docs/ACCEPTANCE.md), and [status](STATUS.md) for scope and dates.
 
@@ -196,7 +199,7 @@ Developers need an Apple Silicon Mac, macOS 15+, Swift/Clang CLT or Xcode, Go 1.
 
 [Build instructions](scripts/README.md) cover dependencies, the local CLT wrapper, configuration, and output verification. The portable runner shares Core test bodies; full Xcode also supports `./scripts/swiftpm.sh test`.
 
-Build defaults are **0.1.5 (6)** for the account-clarification update. The local build has been approved for source delivery. Build/package commands do not publish a GitHub prerelease; the public DMG remains v0.1.4 until a new release is published.
+Build defaults are **0.1.5 (6)** for the account-clarification update. Build/package commands do not publish a GitHub prerelease; publication and downloaded-asset verification are separate steps documented in [GitHub delivery](docs/GITHUB_SETUP.md).
 
 Read-only diagnostics: `'dist/iPhone App Transfer.app/Contents/MacOS/AppTransfer' --diagnostics`. `test-device-bridge.sh --live-read-only` adds device reads without install/removal. Explicit `--demo` uses synthetic data and disables live actions; normal failure never becomes demo success.
 

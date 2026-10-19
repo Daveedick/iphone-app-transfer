@@ -18,7 +18,7 @@ Homebrew's existing bottles were used for this local preview.
 
 `CONFIGURATION=debug` selects a debug Swift build. `APP_VERSION` and `APP_BUILD`
 control bundle metadata (defaults 0.1.5/6). Outputs are `dist/iPhone App Transfer.app`,
-`dist/iPhone-App-Transfer-0.1.5-arm64.dmg` and a SHA-256 file. The local account-clarification update has been approved for source delivery; the public DMG remains v0.1.4 until a new GitHub release is published. The product display name changed in 0.1.4; the internal executable/module is still `AppTransfer`. Bundle ID, Keychain service, preferences, local library and the `~/Library/Caches/App Transfer` runtime cache retain their existing identifiers so users keep saved state. No command publishes,
+`dist/iPhone-App-Transfer-0.1.5-arm64.dmg` and a SHA-256 file. The account-clarification update is distributed as [public prerelease v0.1.5](https://github.com/Daveedick/iphone-app-transfer/releases/tag/v0.1.5); publication/download verification is separate from these commands. The product display name changed in 0.1.4; the internal executable/module is still `AppTransfer`. Bundle ID, Keychain service, preferences, local library and the `~/Library/Caches/App Transfer` runtime cache retain their existing identifiers so users keep saved state. No command publishes,
 installs onto phones, removes phone apps, or changes Gatekeeper settings.
 
 `test-core.sh` is the portable CLT runner for the same Core/Coordinator test
